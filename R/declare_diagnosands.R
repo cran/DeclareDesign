@@ -1,0 +1,273 @@
+#' @param ... A set of new diagnosands.
+#' @param select A set of the default diagnosands to report e.g., \code{select = c(bias, rmse)}. 
+#' @param subtract A set of the default diagnosands to exclude  e.g., \code{subtract = c(bias, rmse)}. Do not provide values for both \code{select} and \code{subtract}.
+#' @param keep_defaults A flag for whether to report the default diagnosands. Defaults to \code{TRUE}.
+#' @param subset A subset of the simulations data frame within which to calculate diagnosands e.g. \code{subset = p.value < .05}.
+#' @param alpha Alpha significance level. Defaults to \code{.05}.
+#' @param label Label for the set of diagnosands.
+#' @param data A data.frame.
+#'
+#' @details
+#'
+#' If term is TRUE, the names of ... will be returned in a `term` column, and `estimand_label`
+#' will contain the step label. This can be used as an additional dimension for use in diagnosis.
+#'
+#'
+#' @importFrom rlang eval_tidy quos is_quosure quo_is_call %||%
+#' @importFrom stats na.omit
+#' @rdname declare_diagnosands
+diagnosand_handler <- function(data, ...,
+                               select,
+                               subtract,
+                               keep_defaults = TRUE,
+                               subset = NULL,
+                               alpha = 0.05,
+                               label) {
+  options <- quos(...)
+  
+  # subsetting the data -----------------------------------------------------
+  
+  subset <- enquo(subset)
+  idx <- eval_tidy(subset, data = data)
+  if (!is.null(idx)) {
+    data <- data[idx, , drop = FALSE]
+  }
+  
+  # defaults ----------------------------------------------------------------
+  
+  defaults_quos <-
+    quos(
+      bias = mean(estimate - estimand),
+      rmse = sqrt(mean((estimate - estimand)^2)),
+      power = mean(p.value < alpha),
+      coverage = mean(estimand <= conf.high & estimand >= conf.low),
+      mean_estimate = mean(estimate),
+      sd_estimate = sd(estimate),
+      mean_se = mean(std.error),
+      type_s_rate = mean((sign(estimate) != sign(estimand))[ p.value < alpha ]),
+      mean_estimand = mean(estimand)
+    )
+  
+  if (!missing(select)) {
+    select_quo <- enquo(select)
+    select_set <- reveal_nse_helper(select_quo)
+    defaults_quos <- defaults_quos[select_set]
+  }
+  
+  if (!missing(subtract)) {
+    subtract_quo <- enquo(subtract)
+    subtract_set <- reveal_nse_helper(subtract_quo)
+    defaults_quos <- defaults_quos[!names(defaults_quos) %in% subtract_set]
+  }
+  
+  if (keep_defaults) {
+    options <- c(options, defaults_quos[!names(defaults_quos) %in% names(options)])
+  }
+  
+  ret <- vector("list", length(options))
+  
+  for (i in seq_along(options)) {
+    ret[i] <- eval_tidy(options[[i]], data = data)
+  }
+  
+  ret <- simplify2array(ret)
+  
+  data.frame(
+    diagnosand_label = names(options),
+    diagnosand = ret,
+    stringsAsFactors = FALSE
+  )
+  
+}
+
+
+validation_fn(diagnosand_handler) <- function(ret, dots, label) {
+  if (sum(c("select", "subtract") %in% names(dots)) > 1) {
+    stop("You may not provide arguments to `select` and `subtract` at the same time.", call. = FALSE)
+  }
+  
+  default_diagnosand_names <-
+    c(
+      "bias", "rmse", "power", "coverage", "mean_estimate", "sd_estimate",
+      "mean_se", "type_s_rate", "mean_estimand"
+    )
+  
+  if ("select" %in% names(dots)) {
+    select_set <- reveal_nse_helper(dots[["select"]])
+    
+    if (!all(select_set %in% default_diagnosand_names)) {
+      declare_time_error(paste0(
+        "Some of your select set are not included in default diagnosands: ",
+        paste(select_set[!select_set %in% default_diagnosand_names],
+              collapse = ", "
+        ), "."
+      ), ret)
+    }
+    default_diagnosand_names <- default_diagnosand_names[select_set]
+  }
+  
+  if ("subtract" %in% names(dots)) {
+    subtract_set <- reveal_nse_helper(dots[["subtract"]])
+    
+    if (!all(subtract_set %in% default_diagnosand_names)) {
+      declare_time_error(paste0(
+        "Some of your subtract set are not included in default diagnosands: ",
+        paste(subtract_set[!subtract_set %in% default_diagnosand_names],
+              collapse = ", "
+        ), "."
+      ), ret)
+    }
+    default_diagnosand_names <- default_diagnosand_names[!default_diagnosand_names %in% subtract_set]
+  }
+  
+  options <- names(dots)[!names(dots) %in% c("select", "subtract", "keep_defaults", "subset", "alpha", "label")]
+  if (!("keep_defaults" %in% names(dots)) ||
+      ("keep_defaults" %in% names(dots) && eval_tidy(dots[["keep_defaults"]]) == TRUE)) {
+    options <- c(options, default_diagnosand_names)
+  }
+  
+  if (length(options) == 0) {
+    declare_time_error("No diagnosands were declared.", ret)
+  }
+  
+  # check whether all diagnosands are named
+  if (is.null(names(dots)) || "" %in% names(dots)) {
+    declare_time_error("All diagnosands must be named", ret)
+  }
+  
+  ret
+}
+
+#' Declare diagnosands
+#'
+#' @inheritParams declare_internal_inherit_params
+#'
+#' @details
+#'
+#' Diagnosands summarize the simulations generated by \code{\link{diagnose_design}} or \code{\link{simulate_design}}. Typically, the columns of the resulting simulations data.frame include the following variables: estimate, std.error, p.value, conf.low, conf.high, and estimand. Many diagnosands will be a function of these variables.
+#'
+#' By default (\code{keep_defaults = TRUE}), a set of common diagnosands are reported:
+#'
+#' bias = mean(estimate - estimand)\cr
+#' rmse = sqrt(mean((estimate - estimand)^2))\cr
+#' power = mean(p.value < .05)\cr
+#' coverage = mean(estimand <= conf.high & estimand >= conf.low)\cr
+#' mean_estimate = mean(estimate)\cr
+#' sd_estimate = sd(estimate)\cr
+#' type_s_rate = mean((sign(estimate) != sign(estimand))[p.value < alpha])\cr
+#' mean_estimand = mean(estimand)\cr
+#'
+#' @return a function that returns a data.frame
+#'
+#' @importFrom rlang eval_tidy
+#'
+#' @export
+#'
+#' @examples
+#'
+#' my_population <- declare_population(N = 500, noise = rnorm(N))
+#'
+#' my_potential_outcomes <- declare_potential_outcomes(
+#'   Y_Z_0 = noise, Y_Z_1 = noise +
+#'   rnorm(N, mean = 2, sd = 2))
+#'
+#' my_assignment <- declare_assignment()
+#'
+#' my_estimand <- declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0))
+#'
+#' my_estimator <- declare_estimator(Y ~ Z, estimand = my_estimand)
+#'
+#' my_reveal <- declare_reveal()
+#'
+#' design <- my_population + my_potential_outcomes + my_estimand +
+#'         my_assignment + my_reveal + my_estimator
+#'
+#' \dontrun{
+#' # using built-in defaults:
+#' diagnosis <- diagnose_design(design)
+#' diagnosis
+#' }
+#'
+#' # You can select a set of those diagnosands via the \code{select} argument e.g.,
+#'
+#' my_diagnosands <- declare_diagnosands(select = c(bias, rmse))
+#'
+#' # Alternatively, you can report all of the default diagnosands and subtract a subset of them e.g.,
+#'
+#' my_diagnosands <- declare_diagnosands(subtract = type_s_rate)
+#'
+#' # You can add your own diagnosands in addition to or instead of the defaults e.g.,
+#'
+#' my_diagnosands <-
+#'   declare_diagnosands(median_bias = median(estimate - estimand))
+#'
+#' # or to report only \code{median_bias}
+#'
+#' my_diagnosands <-
+#'    declare_diagnosands(median_bias = median(estimate - estimand),
+#'                        keep_defaults = FALSE)
+#'
+#' # Below is the code that makes the default diagnosands.
+#' # You can use these as a model when writing your own diagnosands.
+#'
+#' default_diagnosands <- declare_diagnosands(
+#' bias = mean(estimate - estimand),
+#' rmse = sqrt(mean((estimate - estimand) ^ 2)),
+#' power = mean(p.value < alpha),
+#' coverage = mean(estimand <= conf.high & estimand >= conf.low),
+#' mean_estimate = mean(estimate),
+#' sd_estimate = sd(estimate),
+#' mean_se = mean(std.error),
+#' type_s_rate = mean((sign(estimate) != sign(estimand))[p.value < alpha]),
+#' mean_estimand = mean(estimand)
+#' )
+#'
+declare_diagnosands <- make_declarations(diagnosand_handler, "diagnosand", "diagnosands")
+
+#' @importFrom stats na.omit
+default_diagnosands <- function(data, alpha = .05){
+  
+  estimate <- data$estimate %||% NA
+  estimand <- data$estimand %||% NA
+  p.value <- data$p.value %||% NA
+  std.error <- data$std.error %||% NA
+  conf.low <- data$conf.low %||% NA
+  conf.high <- data$conf.high %||% NA
+  
+  bias <- mean(estimate - estimand)
+  rmse <- sqrt(mean((estimate - estimand)^2))
+  power <- mean(p.value < alpha)
+  coverage <- mean(estimand <= conf.high & estimand >= conf.low)
+  mean_estimate <- mean(estimate)
+  sd_estimate <- sd(estimate)
+  mean_se <- mean(std.error)
+  type_s_rate <- mean((sign(estimate) != sign(estimand))[p.value < alpha])
+  mean_estimand <- mean(estimand)
+  
+  data.frame(
+    diagnosand_label = c(
+      "bias",
+      "rmse",
+      "power",
+      "coverage",
+      "mean_estimate",
+      "sd_estimate",
+      "mean_se",
+      "type_s_rate",
+      "mean_estimand"
+    ),
+    diagnosand = c(
+      bias,
+      rmse,
+      power,
+      coverage,
+      mean_estimate,
+      sd_estimate,
+      mean_se,
+      type_s_rate,
+      mean_estimand
+    ), 
+    stringsAsFactors = FALSE
+  )
+  
+}
