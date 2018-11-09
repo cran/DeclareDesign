@@ -74,7 +74,7 @@ my_estimator <- declare_estimator(Y ~ Z,
 
 design_one <- design_stub + my_estimand_ATE + my_estimator
 
-get_estimands(design_one)
+draw_estimands(design_one)
 
 # ----------
 # 2. Multiple estimands
@@ -90,7 +90,7 @@ my_estimator_two <- declare_estimator(Y ~ Z,
 design_two <- design_stub + my_estimand_ATE + 
   my_estimand_ATT + my_estimator_two
 
-get_estimands(design_two)
+draw_estimands(design_two)
 
 # ----------
 # 3. Paired estimands / estimators from a single model
@@ -182,7 +182,9 @@ estimators <- declare_estimator(handler = tidy_estimator(f2),
                             
 design      <- design_stub + estimands + estimators
 
-diagnose_design(design, sims = 20,
+\dontrun{
+diagnose_design(design, sims = 20, bootstrap_sims = FALSE,
                 diagnosands = declare_diagnosands(
                 select = c(mean_estimate, mean_estimand)))
+}
 }
