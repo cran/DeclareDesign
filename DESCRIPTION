@@ -1,6 +1,6 @@
 Package: DeclareDesign
 Title: Declare and Diagnose Research Designs
-Version: 0.12.0
+Version: 0.14.0
 Authors@R: c(person("Graeme", "Blair", email = "graeme.blair@ucla.edu", role = c("aut", "cre")),
              person("Jasper", "Cooper", email = "jaspercooper@gmail.com", role = c("aut")),
              person("Alexander", "Coppock", email = "acoppock@gmail.com", role = c("aut")),
@@ -27,7 +27,7 @@ Suggests: testthat, knitr, rmarkdown, AER, dplyr, data.table, ggplot2,
         future.apply, broom, MASS, Matching, betareg, biglm, gam, lfe,
         sf, reshape2, DesignLibrary
 NeedsCompilation: no
-Packaged: 2018-11-08 15:57:40 UTC; gdblair
+Packaged: 2019-01-07 06:13:49 UTC; gdblair
 Author: Graeme Blair [aut, cre],
   Jasper Cooper [aut],
   Alexander Coppock [aut],
@@ -35,4 +35,4 @@ Author: Graeme Blair [aut, cre],
   Neal Fultz [aut]
 Maintainer: Graeme Blair <graeme.blair@ucla.edu>
 Repository: CRAN
-Date/Publication: 2018-11-09 16:40:26 UTC
+Date/Publication: 2019-01-07 16:50:03 UTC
