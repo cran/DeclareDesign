@@ -21,10 +21,10 @@ test_that("test the custom execution strategy", {
   output <- run_design(exst)
 
   expect_equal(
-    regular$estimates_df$estimate,
-    output$estimates_df$estimate + 1
+    regular$estimate,
+    output$estimate + 1
   )
-  expect_equal(names(output), "estimates_df") # no estimands
+  expect_true(!"estimand" %in% names(output)) # no inquiries
 })
 
 
@@ -36,11 +36,11 @@ test_that("test error messages in run_design", {
   expect_error(run_design(design), "Error in step 2")
 })
 
-test_that("draw_data does not run estimand/estimator", {
+test_that("draw_data does not run inquiry/estimator", {
 
   # closes ticket #12
   design <- declare_population(sleep) +
-    declare_estimand(
+    declare_inquiry(
       "Should not be run",
       handler = function(data, msg)
         stop(x)

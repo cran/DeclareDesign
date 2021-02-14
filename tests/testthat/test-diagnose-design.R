@@ -1,64 +1,5 @@
 context("diagnose design")
 
-test_that("allow design functions to be sent to simulate design and diagnose_design", {
-  my_design_function <- function() {
-    N <- 500
-
-    my_population <- declare_population(N = N, noise = rnorm(N))
-
-    my_potential_outcomes <-
-      declare_potential_outcomes(Y_Z_0 = noise, Y_Z_1 = noise + rnorm(N, mean = 2, sd = 2))
-
-    my_sampling <- declare_sampling(n = 250)
-
-    my_assignment <- declare_assignment(m = 25)
-
-    my_estimand <- declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0))
-
-    my_estimator <- declare_estimator(Y ~ Z, estimand = my_estimand)
-
-    my_reveal <- reveal_outcomes()
-
-    design <- my_population +
-      my_potential_outcomes +
-      my_sampling +
-      my_estimand +
-      declare_step(dplyr::mutate, q = 5) +
-      my_assignment +
-      my_reveal +
-      my_estimator
-
-    run_design(design)
-  }
-
-  des_out <- run_design(my_design_function)
-
-  expect_equal(names(des_out), c("estimates_df", "estimands_df"))
-
-  sims_out <- simulate_design(my_design_function, sims = 2)
-
-  expect_equal(
-    sims_out[, 1:2],
-    structure(list(design_label = c("my_design_function", "my_design_function"), sim_ID = 1:2), class = "data.frame", row.names = c(NA, -2L))
-  )
-
-  diag_out <- diagnose_design(my_design_function, sims = 2, bootstrap_sims = FALSE)
-
-
-  expect_equal(
-    diag_out$diagnosands_df[, 1:4],
-    structure(list(
-      design_label = structure(1L, .Label = "my_design_function", class = "factor"),
-      estimand_label = "ATE", estimator_label = "estimator",
-      term = "Z"
-    ), class = "data.frame", row.names = c(
-      NA,
-      -1L
-    ))
-  )
-})
-
-
 test_that("error when you send other objects to diagnose", {
 
   # must send a function or a design object
@@ -73,17 +14,17 @@ test_that("default diagnosands work", {
     my_potential_outcomes <-
       declare_potential_outcomes(Y_Z_0 = noise, Y_Z_1 = noise + rnorm(N, mean = 2, sd = 2))
 
-    my_assignment <- declare_assignment(m = 25)
+    my_assignment <- declare_assignment(legacy = FALSE, Z = complete_ra(N, m = 25))
 
-    my_estimand <- declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0))
+    my_inquiry <- declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0))
 
-    my_estimator <- declare_estimator(Y ~ Z, estimand = my_estimand)
+    my_estimator <- declare_estimator(Y ~ Z, inquiry = my_inquiry)
 
-    my_reveal <- reveal_outcomes()
+    my_reveal <- declare_reveal()
 
     design <- my_population +
       my_potential_outcomes +
-      my_estimand +
+      my_inquiry +
       declare_step(dplyr::mutate, q = 5) +
       my_assignment +
       my_reveal +
@@ -118,7 +59,7 @@ test_that("default diagnosands work", {
   )
 
   expect_equal(names(diag$diagnosands_df), 
-               c("design_label", "estimand_label", "estimator_label", "term", 
+               c("design_label", "inquiry_label", "estimator_label", "term", 
                  "med_bias", "se(med_bias)", "n_sims"
                ))
   
@@ -137,7 +78,7 @@ test_that("default diagnosands work", {
     sims = 2
   )
   
-  expect_equal(names(diag$diagnosands_df), c("design_label", "estimand_label", "estimator_label", "term", 
+  expect_equal(names(diag$diagnosands_df), c("design_label", "inquiry_label", "estimator_label", "term", 
                                              "my_bias", "se(my_bias)", "my_power", 
                                              "se(my_power)", "n_sims"))
   
@@ -150,11 +91,11 @@ test_that("default diagnosands work", {
   )
   
   expect_equal(names(diag$diagnosands_df), 
-               c("design_label", "estimand_label", "estimator_label", "term", 
+               c("design_label", "inquiry_label", "estimator_label", "term", 
                  "bias", "se(bias)", "rmse", "se(rmse)", "power", "se(power)", 
                  "coverage", "se(coverage)", "mean_estimate", "se(mean_estimate)", 
                  "sd_estimate", "se(sd_estimate)", "mean_se", "se(mean_se)", "type_s_rate", 
-                 "se(type_s_rate)", "mean_estimand", "se(mean_estimand)", "n_sims"))
+                 "se(type_s_rate)", "mean_inquiry", "se(mean_inquiry)", "n_sims"))
   
   # w/ none set and override
 
@@ -166,7 +107,7 @@ test_that("default diagnosands work", {
   )
     
   expect_equal(names(diag$diagnosands_df), 
-               c("design_label", "estimand_label", "estimator_label", "term", 
+               c("design_label", "inquiry_label", "estimator_label", "term", 
                  "med_bias", "se(med_bias)", "n_sims"
                ))
   
@@ -182,7 +123,7 @@ test_that("default diagnosands work", {
   diag <- diagnose_design(designs, sims = 5, bootstrap_sims = FALSE)
  
   expect_equal(names(diag$diagnosands_df), 
-               c("design_label", "N", "estimand_label", "estimator_label", "term", 
+               c("design_label", "N", "inquiry_label", "estimator_label", "term", 
                  "med_bias", "n_sims"))
   
   # w mix of diagnosands set
@@ -205,24 +146,24 @@ test_that("more term",{
                        Z = rep(0:1, 50),
                        Y = rnorm(N))
   
-  estimands_regression <- declare_estimand(
+  inquiries_regression <- declare_inquiry(
     `(Intercept)` = 0,
     `Z` = 1,
     term = TRUE,
-    label = "Regression_Estimands"
+    label = "Regression_Inquiries"
   )
   
   estimators_regression <- declare_estimator(Y ~ Z,
-                                             estimand = estimands_regression,
+                                             inquiry = inquiries_regression,
                                              model = lm_robust,
                                              term = TRUE)
   
-  estimand_2  <- declare_estimand(ATE = 2,   label = "2")
+  inquiry_2  <- declare_inquiry(ATE = 2,   label = "2")
   estimator_2 <-
-    declare_estimator(Y ~ Z, estimand = estimand_2, label = "dim")
+    declare_estimator(Y ~ Z, inquiry = inquiry_2, label = "dim")
   
   design <-
-    population + estimands_regression + estimators_regression + estimand_2 + estimator_2
+    population + inquiries_regression + estimators_regression + inquiry_2 + estimator_2
   
   sims_df <- simulate_design(design, sims = 1)
   
@@ -233,8 +174,8 @@ test_that("more term",{
                  list(
                    design_label = c("design", "design", "design"),
                    sim_ID = c(1L, 1L, 1L),
-                   estimand_label = c("ATE", "Regression_Estimands",
-                                      "Regression_Estimands"),
+                   inquiry_label = c("ATE", "Regression_Inquiries",
+                                      "Regression_Inquiries"),
                    estimand = c(2, 0, 1),
                    estimator_label = c("dim",
                                        "estimator", "estimator"),
@@ -253,7 +194,7 @@ test_that("diagnose_design does not reclass the variable N", {
   # works for redesign
   design <-
     declare_population(N = 5, noise = rnorm(N)) +
-       declare_estimand(mean_noise = mean(noise))
+       declare_inquiry(mean_noise = mean(noise))
   
   designs <- redesign(design, N = 5:10) 
   dx <- diagnose_design(designs, sims = 50, bootstrap_sims = FALSE)
@@ -264,7 +205,7 @@ test_that("diagnose_design does not reclass the variable N", {
   # works for expand_design
   designer <- function(N = 5) {
     declare_population(N = N, noise = rnorm(N)) +
-    declare_estimand(mean_noise = mean(noise))
+    declare_inquiry(mean_noise = mean(noise))
   }
   
   designs <- expand_design(designer, N = 5:10) 
@@ -279,8 +220,8 @@ test_that("diagnose_design does not reclass the variable N", {
 test_that("diagnose_design works when simulations_df lacking parameters attr", {
 
   design <- declare_population(N = 100, X = rnorm(N), Y = rnorm(N, X)) +
-    declare_estimand(true_effect = 1) +
-    declare_estimator(Y ~ X, model=lm_robust, estimand = "true_effect", label = "Y on X") 
+    declare_inquiry(true_effect = 1) +
+    declare_estimator(Y ~ X, model=lm_robust, inquiry = "true_effect", label = "Y on X") 
   
   simulations <-  simulate_design(design, sims = 20) 
   
@@ -303,4 +244,63 @@ test_that("diagnose_design works when simulations_df lacking parameters attr", {
 
 test_that("diagnose_design stops when a zero-row simulations_df is sent", {
   expect_error(diagnose_design(data.frame(estimator_label = rep(1, 0))), "which has zero rows")
+})
+
+test_that("diagnose_design can generate and use grouping variables", {
+  
+  design <- 
+    declare_population(N = 100, u = rnorm(N)) + 
+    declare_potential_outcomes(Y_Z_0 = 0, Y_Z_1 = ifelse(rbinom(N, 1, prob = 0.5), 0.1, -0.1) + u) +
+    declare_assignment() + 
+    declare_inquiry(ATE_positive = mean(Y_Z_1 - Y_Z_0) > 0) + 
+    declare_reveal() + 
+    declare_estimator(Y ~ Z, inquiry = "ATE_positive")
+  
+  diagnosis <- diagnose_design(design, 
+                               make_groups = vars(estimand, significant = p.value <= 0.05),
+                               sims = 5
+  )
+  expect_equivalent(diagnosis$diagnosands_df$significant,  c(FALSE, FALSE))
+  expect_equivalent(diagnosis$diagnosands_df$estimand,  c(FALSE, TRUE))
+  
+  design <- 
+    declare_population(N = 100, u = rnorm(N)) + 
+    declare_potential_outcomes(Y_Z_0 = 0, Y_Z_1 = ifelse(rbinom(N, 1, prob = 0.5), 0.1, -0.1) + u) +
+    declare_assignment() + 
+    declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) + 
+    declare_reveal() + 
+    declare_estimator(Y ~ Z, inquiry = "ATE")
+  
+  diagnosis <- diagnose_design(
+    design,
+    make_groups = vars(effect_size = cut(
+      estimand, quantile(estimand, (0:4) / 4), include.lowest = TRUE
+    )),
+    sims = 5
+  )
+  
+  expect_equivalent(nrow(diagnosis$diagnosands_df),  4)
+  
+  
+  
+  design <- 
+    declare_population(N = 100, u = rnorm(N)) + 
+    declare_potential_outcomes(Y_Z_0 = 0, Y_Z_1 = ifelse(rbinom(N, 1, prob = 0.5), 0.1, -0.1) + u) +
+    declare_assignment() + 
+    declare_inquiry(ATE_positive = mean(Y_Z_1 - Y_Z_0) > 0) + 
+    declare_reveal() + 
+    declare_estimator(Y ~ Z, inquiry = "ATE_positive")
+  
+  diagnosis <- diagnose_design(design, 
+                               make_groups = vars(significant = ifelse(p.value > 0.1, NA, p.value <= 0.05)),
+                               sims = 5
+  )
+  
+  print(diagnosis, digits = 5, select = "Bias")
+  
+  diagnosis <- diagnose_design(design, 
+                               make_groups = vars(significant = factor(ifelse(p.value > 0.1, NA, p.value <= 0.05))),
+                               sims = 100
+  )
+  
 })

@@ -5,21 +5,23 @@
 #' @examples
 #'
 #' design <-
-#'   declare_population(N = 500, noise = rnorm(N)) +
-#'   declare_potential_outcomes(Y ~ noise + Z * rnorm(N, 2, 2)) +
-#'   declare_sampling(n = 250) +
-#'   declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0)) +
-#'   declare_step(dplyr::mutate, noise_sq = noise^2) +
-#'   declare_assignment(m = 25) +
-#'   reveal_outcomes() +
-#'   declare_estimator(Y ~ Z, estimand = "my_estimand")
+#'   declare_model(
+#'     N = 500, 
+#'     U = rnorm(N),
+#'     potential_outcomes(Y ~ U + Z * rnorm(N, 2, 2))
+#'   ) +
+#'   declare_sampling(S = complete_rs(N, n = 250), legacy = FALSE) +
+#'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
+#'   declare_assignment(Z = complete_ra(N, m = 25), legacy = FALSE) +
+#'   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
+#'   declare_estimator(Y ~ Z, inquiry = "my_inquiry")
 #'
 #' design
 #'
 #' df <- draw_data(design)
 #'
 #' estimates <- draw_estimates(design)
-#' estimands <- draw_estimands(design)
+#' inquiries <- draw_inquiries(design)
 #' 
 #' print_code(design)
 #'
@@ -67,12 +69,30 @@ check_sims <- function(design, sims) {
   ret
 }
 
-#' Execute a design
+#' Run a design one time
 #'
 #' @param design a DeclareDesign object
 #'
+#' @examples 
+#' design <-
+#'   declare_model(
+#'     N = 100, X = rnorm(N),
+#'     potential_outcomes(Y ~ (.25 + X) * Z + rnorm(N))
+#'   ) +
+#'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
+#'   declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE) +
+#'   declare_measurement(Y = reveal_outcomes(Y ~ Z)) + 
+#'   declare_estimator(Y ~ Z, inquiry = "ATE")
+#' 
+#' run_design(design)
+#' 
+#'
 #' @export
-run_design <- function(design) run_design_internal(design)
+run_design <- function(design){
+  ret <- simulate_single_design(design, sims = 1, low_simulations_warning = FALSE)
+  ret$sim_ID <- NULL
+  return(ret)
+}
 
 run_design_internal <- function(design, ...) UseMethod("run_design_internal", design)
 
@@ -87,13 +107,13 @@ next_step <- function(step, current_df, i) {
 }
 
 run_design_internal.default <- function(design) {
-  stop("Please only send design objects or functions with no arguments to run_design.")
+  stop("Please only send design objects to run_design.")
 }
 
 run_design_internal.design <- function(design, current_df = NULL, results = NULL, start = 1, end = length(design), ...) {
   if (!is.list(results)) {
     results <- list(
-      estimand = vector("list", length(design)),
+      inquiry = vector("list", length(design)),
       estimator = vector("list", length(design))
     )
   }
@@ -119,9 +139,9 @@ run_design_internal.design <- function(design, current_df = NULL, results = NULL
       results[["estimates_df"]] <- rbind_disjoint(results[["estimator"]])
       results[["estimator"]] <- NULL
     }
-    if ("estimand" %in% names(results)) {
-      results[["estimands_df"]] <- rbind_disjoint(results[["estimand"]])
-      results[["estimand"]] <- NULL
+    if ("inquiry" %in% names(results)) {
+      results[["inquiries_df"]] <- rbind_disjoint(results[["inquiry"]])
+      results[["inquiry"]] <- NULL
     }
     if ("current_df" %in% names(results)) {
       results[["current_df"]] <- current_df
@@ -138,12 +158,6 @@ run_design_internal.design <- function(design, current_df = NULL, results = NULL
       ...
     )
   }
-}
-
-# for when the user sends a function that runs a design itself
-#   to run_design (or simulate_design / diagnose_design above it)
-run_design_internal.function <- function(design) {
-  design()
 }
 
 run_design_internal.execution_st <- function(design, ...) do.call(run_design_internal.design, design)
@@ -216,9 +230,9 @@ dots_to_list_of_designs <- function(...) {
 #'
 #' @examples
 #'
-#' my_population <- declare_population(N = 100)
+#' my_population <- declare_model(N = 100)
 #'
-#' my_assignment <- declare_assignment(m = 50)
+#' my_assignment <- declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE)
 #'
 #' my_design <- my_population + my_assignment
 #'
@@ -308,7 +322,7 @@ fan_out <- function(design, fan) {
       st[[j]]$fan[i] <- j
     
     
-    st <- future_lapply(seq_along(st), function(j) run_design(st[[j]]), future.seed = NA, future.globals = "st")
+    st <- future_lapply(seq_along(st), function(j) run_design_internal(st[[j]]), future.seed = NA, future.globals = "st")
   }
   
   st <- lapply(st, function(x){

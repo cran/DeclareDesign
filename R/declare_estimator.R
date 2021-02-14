@@ -2,7 +2,7 @@
 #'
 #' @description Declares an estimator which generates estimates and associated statistics.
 #' 
-#' Use of \code{declare_test} is identical to use of \code{\link{declare_estimator}}. Use \code{declare_test} for hypothesis testing with no specific estimand in mind; use \code{declare_estimator} for hypothesis testing when you can link each estimate to an estimand. For example, \code{declare_test} could be used for a K-S test of distributional equality and \code{declare_estimator} for a difference-in-means estimate of an average treatment effect.
+#' Use of \code{declare_test} is identical to use of \code{\link{declare_estimator}}. Use \code{declare_test} for hypothesis testing with no specific inquiry in mind; use \code{declare_estimator} for hypothesis testing when you can link each estimate to an inquiry. For example, \code{declare_test} could be used for a K-S test of distributional equality and \code{declare_estimator} for a difference-in-means estimate of an average treatment effect.
 #'
 #' @inheritParams declare_internal_inherit_params
 #' 
@@ -10,15 +10,15 @@
 #' 
 #' \code{declare_estimator} is designed to handle two main ways of generating parameter estimates from data.
 #' 
-#' In \code{declare_estimator}, you can optionally provide the name of an estimand or an objected created by \code{\link{declare_estimand}} to connect your estimate(s) to estimand(s).
+#' In \code{declare_estimator}, you can optionally provide the name of an inquiry or an objected created by \code{\link{declare_inquiry}} to connect your estimate(s) to inquiry(s).
 #' 
 #' The first is through \code{label_estimator(model_handler)}, which is the default value of the \code{handler} argument. Users can use standard modeling functions like lm, glm, or iv_robust. The models are summarized using the function passed to the \code{model_summary} argument. This will usually be a "tidier" like \code{broom::tidy}. The default \code{model_summary} function is \code{tidy_try}, which applies a tidy method if available, and if not, tries to make one on the fly.
 #' 
 #' An example of this approach is:
 #' 
-#' \code{declare_estimator(Y ~ Z + X, model = lm_robust, model_summary = tidy, term = "Z", estimand = "ATE")}
+#' \code{declare_estimator(Y ~ Z + X, model = lm_robust, model_summary = tidy, term = "Z", inquiry = "ATE")}
 #' 
-#' The second approach is using a custom data-in, data-out function, usually first passed to \code{label_estimator}. The reason to pass the custom function to \code{label_estimator} first is to enable clean labeling and linking to estimands.
+#' The second approach is using a custom data-in, data-out function, usually first passed to \code{label_estimator}. The reason to pass the custom function to \code{label_estimator} first is to enable clean labeling and linking to inquiries.
 #' 
 #' An example of this approach is:
 #' 
@@ -27,7 +27,7 @@
 #' }
 #' 
 #' \code{
-#' declare_estimator(handler = label_estimator(my_fun), estimand = "ATE")
+#' declare_estimator(handler = label_estimator(my_fun), inquiry = "ATE")
 #' }
 #' 
 #' @export
@@ -36,155 +36,95 @@
 #' @return A function that accepts a data.frame as an argument and returns a data.frame containing the value of the estimator and associated statistics.
 #'
 #' @examples
-#'
-#' # Declare estimand
-#' my_estimand <- declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0))
+#' # base design
+#' design <-
+#'   declare_model(
+#'     N = 100,
+#'     female = rbinom(N, 1, 0.5),
+#'     U = rnorm(N),
+#'     potential_outcomes(
+#'      Y ~ rbinom(N, 1, prob = pnorm(0.2 * Z + 0.2 * female + 0.1 * Z * female + U)))
+#'   ) +
+#'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) + 
+#'   declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE) + 
+#'   declare_measurement(Y = reveal_outcomes(Y ~ Z))
 #' 
-#' # Declare estimator using the default handler using `difference_in_means`
-#' # estimator from `estimatr` package. Returns the first non-intercept term
-#' # as estimate
+#' # Most estimators are modeling functions like lm or glm.
+#'   
+#' # Default statistical model is estimatr::difference_in_means
+#' design + declare_estimator(Y ~ Z, inquiry = "ATE")
 #' 
-#' my_estimator_dim <- declare_estimator(Y ~ Z, estimand = "ATE", label = "DIM")
-#'
-#' # Use lm function from base R
-#' my_estimator_lm <- declare_estimator(Y ~ Z, estimand = "ATE",
-#'   model = lm, label = "LM")
-#
-#' # Use lm_robust (linear regression with robust standard errors) from
-#' # `estimatr` package
-#'
-#' my_estimator_lm_rob <- declare_estimator(
-#'   Y ~ Z,
-#'   estimand = "ATE",
-#'   model = lm_robust,
-#'   label = "LM_Robust"
-#' )
-#'
-#' # Set `term` if estimate of interest is not the first non-intercept variable
-#' my_estimator_lm_rob_x <- declare_estimator(
-#'   Y ~ X + Z,
-#'   estimand = my_estimand,
-#'   term = "Z",
-#'   model = lm_robust
-#' )
-#'
+#' # lm from base R (classical standard errors assuming homoskedasticity)
+#' design + declare_estimator(Y ~ Z, model = lm, inquiry = "ATE")
+#' 
+#' # Use lm_robust (linear regression with heteroskedasticity-robust standard errors) 
+#' # from `estimatr` package
+#' 
+#' design + declare_estimator(Y ~ Z, model = lm_robust, inquiry = "ATE")
+#' 
+#' # use `term` to select particular coefficients
+#' design + declare_estimator(Y ~ Z*female, term = "Z:female", model = lm_robust)
+#' 
 #' # Use glm from base R
-#' my_estimator_glm <- declare_estimator(
-#'   Y ~ X + Z,
+#' design + declare_estimator(
+#'   Y ~ Z + female,
 #'   family = "gaussian",
-#'   estimand = my_estimand,
-#'   term = "Z",
+#'   inquiry = "ATE",
 #'   model = glm
 #' )
-#'
-#' # A probit
-#' estimator_probit <- declare_estimator(
-#'   Y ~ Z,
-#'   model = glm,
-#'   family = binomial(link = "probit"),
-#'   term = "Z"
-#' )
-#'
+#' 
+#' # If we use logit, we'll need to estimate the average marginal effect with 
+#' # margins::margins. We wrap this up in function we'll pass to model_summary
+#' 
+#' library(margins) # for margins
+#' library(broom) # for tidy
+#' 
+#' tidy_margins <- function(x) {
+#'   tidy(margins(x, data = x$data), conf.int = TRUE)
+#' }
+#' 
+#' design +
+#'   declare_estimator(
+#'     Y ~ Z + female,
+#'     model = glm,
+#'     family = binomial("logit"),
+#'     model_summary = tidy_margins,
+#'     term = "Z"
+#'   ) 
+#' 
+#' # Multiple estimators for one inquiry
+#' 
+#' two_estimators <-
+#'   design +
+#'   declare_estimator(Y ~ Z,
+#'                     model = lm_robust,
+#'                     inquiry = "ATE",
+#'                     label = "OLS") +
+#'   declare_estimator(
+#'     Y ~ Z + female,
+#'     model = glm,
+#'     family = binomial("logit"),
+#'     model_summary = tidy_margins,
+#'     inquiry = "ATE",
+#'     term = "Z",
+#'     label = "logit"
+#'   )
+#' 
+#' run_design(two_estimators)
+#' 
 #' # Declare estimator using a custom handler
-#'
+#' 
 #' # Define your own estimator and use the `label_estimator` function for labeling
 #' # Must have `data` argument that is a data.frame
-#' my_estimator_function <- function(data){
-#'   data.frame(estimate = with(data, mean(Y)))
+#' my_dim_function <- function(data){
+#'   data.frame(estimate = with(data, mean(Y[Z == 1]) - mean(Y[Z == 0])))
 #' }
-#'
-#' my_estimator_custom <- declare_estimator(
-#'   handler = label_estimator(my_estimator_function),
-#'   estimand = my_estimand
+#' 
+#' design + declare_estimator(
+#'   handler = label_estimator(my_dim_function),
+#'   inquiry = "ATE"
 #' )
-#'
-#' # Customize labeling
-#'
-#' my_estimator_function <- function(data){
-#'   data.frame(
-#'     estimator_label = "foo",
-#'     estimand_label = "bar",
-#'     estimate = with(data, mean(Y)),
-#'     n = nrow(data),
-#'     stringsAsFactors = FALSE
-#'   )
-#' }
-#'
-#' my_estimator_custom2 <- declare_estimator(handler = my_estimator_function)
-#'
-#'
-#' # Examples
-#'
-#' # First, set up the rest of a design
-#' set.seed(42)
-#'
-#' design_def <-
-#'   declare_population(N = 100, X = rnorm(N), W = rexp(N, 1), noise = rnorm(N)) +
-#'   declare_potential_outcomes(Y ~ .25 * Z + noise) +
-#'   declare_estimand(ATE = mean(Y_Z_1 - Y_Z_0)) +
-#'   declare_assignment(m = 50) +
-#'   reveal_outcomes() +
-#'   my_estimator_dim
-#'
-#' draw_estimates(design_def)
-#'
-#' # Can also use declared estimator on a data.frame
-#' dat <- draw_data(design_def)
-#' my_estimator_dim(dat)
-#'
-#' # ----------
-#' # 2. Using existing estimators
-#' # ----------
-#'
-#' design <- replace_step(design_def, my_estimator_dim, my_estimator_lm_rob)
-#' draw_estimates(design)
-#'
-#' design <- replace_step(design_def, my_estimator_dim, my_estimator_lm)
-#' draw_estimates(design)
-#'
-#' design <- replace_step(design_def, my_estimator_dim, my_estimator_glm)
-#' draw_estimates(design)
-#'
-#' # ----------
-#' # 3. Using custom estimators
-#' # ----------
-#'
-#' design <- replace_step(design_def, my_estimator_dim, my_estimator_custom)
-#'
-#' draw_estimates(design)
-#'
-#' # The names in your custom estimator return should match with
-#' # your diagnosands when diagnosing a design
-#' my_median <- function(data) data.frame(med = median(data$Y))
-#'
-#' my_estimator_median <- declare_estimator(
-#'   handler = label_estimator(my_median),
-#'   estimand = my_estimand
-#' )
-#'
-#' design <- replace_step(design_def, my_estimator_dim, my_estimator_median)
-#'
-#' draw_estimates(design)
-#'
-#' my_diagnosand <- declare_diagnosands(med_to_estimand = mean(med - estimand))
-#'
-#' \dontrun{
-#' diagnose_design(design, diagnosands = my_diagnosand, sims = 5,
-#'   bootstrap_sims = FALSE)
-#' }
-#'
-#' # ----------
-#' # 4. Multiple estimators per estimand
-#' # ----------
-#'
-#' design_two <- insert_step(design_def,  my_estimator_lm,
-#'   after = my_estimator_dim)
-#'
-#' draw_estimates(design_two)
-#'
-#' \dontrun{
-#' diagnose_design(design_two, sims = 5, bootstrap_sims = FALSE)
-#' }
+#' 
 declare_estimator <-
   make_declarations(
     label_estimator(model_handler),
@@ -198,7 +138,7 @@ declare_estimator <-
 declare_estimators <- declare_estimator
 
 #' @details
-#' \code{label_estimator} takes a data-in-data out function to \code{fn}, and returns a data-in-data-out function that first runs the provided estimation function \code{fn} and then appends a label for the estimator and, if an estimand is provided, a label for the estimand.
+#' \code{label_estimator} takes a data-in-data out function to \code{fn}, and returns a data-in-data-out function that first runs the provided estimation function \code{fn} and then appends a label for the estimator and, if an inquiry is provided, a label for the inquiry.
 #' 
 #' @param fn A function that takes a data.frame as an argument and returns a data.frame with the estimates, summary statistics (i.e., standard error, p-value, and confidence interval), and a term column for labeling coefficient estimates.
 #' 
@@ -209,7 +149,7 @@ label_estimator <- function(fn) {
     stop("Must provide a `estimator_function` function with a data argument.")
   }
 
-  f <- function(data, ..., estimand = NULL, label) {
+  f <- function(data, ...,  inquiry = NULL,estimand = NULL, label) {
     calling_args <-
       names(match.call(expand.dots = FALSE)) %i% names(formals(fn))
 
@@ -234,12 +174,20 @@ label_estimator <- function(fn) {
       stringsAsFactors = FALSE
     )
 
-    estimand_label <- get_estimand_label(estimand)
-    if (length(estimand_label) > 0) {
+
+    if(!is.null(estimand) && !is.null(inquiry)) {stop("Please provide either an inquiry or an estimand, but not both")}
+    if(!is.null(estimand)){
+      inquiry <- estimand
+      warning("The argument 'estimand = ' is deprecated. Please use 'inquiry = ' instead.", call. = FALSE)
+    }
+    
+    
+    inquiry_label <- get_inquiry_label(inquiry)
+    if (length(inquiry_label) > 0) {
       ret <-
         cbind(
           ret,
-          estimand_label = estimand_label,
+          inquiry_label = inquiry_label,
           row.names = NULL,
           stringsAsFactors = FALSE
         )
@@ -248,9 +196,13 @@ label_estimator <- function(fn) {
   }
 
   formals(f) <- formals(fn)
+  if (!"inquiry" %in% names(formals(f))) {
+    formals(f)["inquiry"] <- list(NULL)
+  }
   if (!"estimand" %in% names(formals(f))) {
     formals(f)["estimand"] <- list(NULL)
   }
+  
   if (!"label" %in% names(formals(f))) {
     formals(f)$label <- alist(a = )$a
   }
@@ -359,17 +311,17 @@ validation_fn(model_handler) <- function(ret, dots, label) {
   ret
 }
 
-# helper methods for estimand = my_estimand arguments to estimator_handler
+# helper methods for inquiry = my_inquiry arguments to estimator_handler
 #
-get_estimand_label <- function(estimand) {
-  force(estimand) # no promise nonsense when we look at it
+get_inquiry_label <- function(inquiry) {
+  force(inquiry) # no promise nonsense when we look at it
   switch(
-    class(estimand)[1],
-    "character" = estimand,
-    "design_step" = attributes(estimand)$label,
-    "list" = vapply(estimand, get_estimand_label, NA_character_),
+    class(inquiry)[1],
+    "character" = inquiry,
+    "design_step" = attributes(inquiry)$label,
+    "list" = vapply(inquiry, get_inquiry_label, NA_character_),
     # note recursion here
     NULL = NULL,
-    warning("Did not match class of `estimand`")
+    warning("Did not match class of `inquiry`")
   )
 }

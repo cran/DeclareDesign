@@ -7,7 +7,7 @@
 \usage{
 declare_sampling(..., handler = sampling_handler, label = NULL)
 
-sampling_handler(data, ..., sampling_variable = "S", drop_nonsampled = TRUE)
+sampling_handler(data, ..., legacy = TRUE)
 }
 \arguments{
 \item{...}{arguments to be captured, and later passed to the handler}
@@ -18,43 +18,35 @@ sampling_handler(data, ..., sampling_variable = "S", drop_nonsampled = TRUE)
 
 \item{data}{A data.frame.}
 
-\item{sampling_variable}{The prefix for the sampling inclusion probability variable.}
-
-\item{drop_nonsampled}{Logical indicating whether to drop units that are not sampled. Default is \code{TRUE}.}
+\item{legacy}{Use the legacy randomizr functionality. This will be disabled in future; please use legacy = FALSE.}
 }
 \value{
-A function that takes a data.frame as an argument and returns a data.frame subsetted to sampled observations and (optionally) augmented with inclusion probabilities and other quantities.
+A sampling declaration, which is a function that takes a data.frame as an argument and returns a data.frame subsetted to sampled observations and (optionally) augmented with inclusion probabilities and other quantities.
 }
 \description{
 Declare sampling procedure
 }
-\details{
-\code{declare_sampling} can work with any sampling_function that takes data and returns data. The default handler is \code{draw_rs} from the \code{randomizr} package. This allows quick declaration of many sampling schemes that involve strata and clusters.
-
-The arguments to \code{\link{draw_rs}} can include N, strata, clusters, n, prob, strata_n, and strata_prob.
-The arguments you need to specify are different for different designs.
-
-Note that \code{declare_sampling} works similarly to \code{declare_assignment} a key difference being that \code{declare_sampling} functions subset data to sampled units rather than simply appending an indicator for membership of a sample (assignment). If you need to sample but keep the dataset use \code{declare_assignment} and define further steps (such as estimation) with respect to subsets defined by the assignment.
-
-For details see the help files for \code{\link{complete_rs}}, \code{\link{strata_rs}}, \code{\link{cluster_rs}}, or \code{\link{strata_and_cluster_rs}}
-}
 \examples{
 
-# Default handler is `draw_rs` from `randomizr` package
+design <- declare_model(
 
-# Simple random sampling
-my_sampling <- declare_sampling(n = 50)
+  classrooms = add_level(10),
+  individuals = add_level(20, female = rbinom(N, 1, 0.5))
+
+) + NULL
+
+# Complete random sampling
+
+design + declare_sampling(
+  S = complete_rs(N = N, n = 50), 
+  filter = S == 1, legacy = FALSE)
+
+# equivalently, by default filter is set to S == 1
+design + declare_sampling(S = complete_rs(N = N, n = 50), 
+                          legacy = FALSE)
 
 # Stratified random sampling
-my_stratified_sampling <- declare_sampling(strata = female)
 
-# Custom random sampling functions
-
-my_sampling_function <- function(data, n=nrow(data)) {
-   data[sample(n,n,replace=TRUE), , drop=FALSE]
-}
-
-my_sampling_custom <- declare_sampling(handler = my_sampling_function)
-
-my_sampling_custom(sleep)
+design + declare_sampling(S = strata_rs(strata = female), 
+                          legacy = FALSE)
 }
