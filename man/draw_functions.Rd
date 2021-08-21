@@ -3,22 +3,16 @@
 \name{draw_functions}
 \alias{draw_functions}
 \alias{draw_data}
-\alias{draw_inquiry}
-\alias{draw_inquiries}
-\alias{draw_estimands}
 \alias{draw_estimand}
+\alias{draw_estimands}
 \alias{draw_estimates}
 \title{Draw data, estimates, and inquiries from a design}
 \usage{
 draw_data(design, data = NULL, start = 1, end = length(design))
 
-draw_inquiry(...)
-
-draw_inquiries(...)
+draw_estimand(...)
 
 draw_estimands(...)
-
-draw_estimand(...)
 
 draw_estimates(...)
 }
@@ -45,8 +39,8 @@ design <-
     potential_outcomes(Y ~ Z + U)
   ) +
   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
-  declare_sampling(S = complete_rs(N, n = 75), legacy = FALSE) +
-  declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE) +
+  declare_sampling(S = complete_rs(N, n = 75)) +
+  declare_assignment(Z = complete_ra(N, m = 50)) +
   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
   declare_estimator(Y ~ Z, inquiry = "ATE")
 
@@ -54,7 +48,7 @@ dat <- draw_data(design)
 
 dat_no_sampling <- draw_data(design, end = 3)
 
-draw_inquiries(design)
+draw_estimands(design)
 
 draw_estimates(design)
 

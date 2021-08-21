@@ -118,7 +118,7 @@ test_that("even more kinds of parameters can be sent, vectors and scalars, etc."
   my_designer <- function(N, ate) {
     pop <- declare_population(N = N, noise = rnorm(N))
     pos <- declare_potential_outcomes(Y ~ ate * Z + noise)
-    assgn <- declare_assignment(legacy = FALSE, Z = complete_ra(N, m = N / 2))
+    assgn <- declare_assignment(Z = complete_ra(N, m = N / 2))
     inquiry <- declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0))
     estimator <- declare_estimator(Y ~ Z, inquiry = inquiry)
     pop + pos + assgn + inquiry + estimator
@@ -221,7 +221,7 @@ test_that("expand with vector arguments", {
   }
   
   expect_equal(
-    draw_inquiries(expand_design(my_designer, z=list(2)))$estimand, 2)
+    draw_estimands(expand_design(my_designer, z=list(2)))$estimand, 2)
   
   
   zx <- list(1:4, 2:10, 9:1, list(4,9,2))
@@ -229,7 +229,7 @@ test_that("expand with vector arguments", {
   dsns <- expand_design(my_designer, z=zx)
   
   expect_equivalent(
-    unlist(sapply(dsns, draw_inquiries)[2,]),
+    unlist(sapply(dsns, draw_estimands)[2,]),
     sapply(zx, function(x)max(unlist(x)))
   )
   

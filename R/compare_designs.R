@@ -64,16 +64,16 @@ compare_partial <- function(FUN, DIFFFUN, is_data = FALSE){
 #' 
 #' design1 <- declare_model(N = 100, u = rnorm(N), potential_outcomes(Y ~ Z + u)) +
 #'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
-#'   declare_sampling(S = complete_rs(N, n = 75), legacy = FALSE) +
-#'   declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE) +
+#'   declare_sampling(S = complete_rs(N, n = 75)) +
+#'   declare_assignment(Z = complete_ra(N, m = 50)) +
 #'   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
 #'   declare_estimator(Y ~ Z, inquiry = "ATE")
 #' 
 #' design2 <- declare_model(N = 200, U = rnorm(N),
 #'                          potential_outcomes(Y ~ 0.5*Z + U)) +
 #'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
-#'   declare_sampling(S = complete_rs(N, n = 100), legacy = FALSE) +
-#'   declare_assignment(Z = complete_ra(N, m = 25), legacy = FALSE) +
+#'   declare_sampling(S = complete_rs(N, n = 100)) +
+#'   declare_assignment(Z = complete_ra(N, m = 25)) +
 #'   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
 #'   declare_estimator(Y ~ Z, model = lm_robust, inquiry = "ATE")
 #'  
@@ -94,7 +94,7 @@ compare_designs <- function(design1, design2, format = "ansi8", pager = "off", c
   compare_functions <-
     list(code_comparison = compare_design_code,
          data_comparison = compare_design_data, 
-         inquiries_comparison = compare_design_inquiries,
+         estimands_comparison = compare_design_inquiries,
          estimates_comparison = compare_design_estimates)
   
   vals <-
@@ -120,7 +120,7 @@ print.design_comparison <- function(x, ...) {
   
   labels <- c("code_comparison" = "design code", 
               "data_comparison" = "draw_data(design)",
-              "inquiries_comparison" = "draw_inquiries(design)",
+              "estimands_comparison" = "draw_estimands(design)",
               "estimates_comparison" = "draw_estimates(design)")
   
   for(n in names(labels)) {
@@ -149,7 +149,7 @@ compare_design_estimates <- compare_partial(draw_estimates, "diffObj", is_data =
 
 #' @rdname compare_functions
 #' @export
-compare_design_inquiries <- compare_partial(draw_inquiries, "diffObj", is_data = FALSE)
+compare_design_inquiries <- compare_partial(draw_estimands, "diffObj", is_data = FALSE)
 
 
 compare_design_internal <- function(FUN, DIFFFUN, design1, design2, format = "ansi256", mode = "sidebyside", pager = "off", context = -1L, rmd = FALSE){

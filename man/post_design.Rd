@@ -38,9 +38,9 @@ design <-
     U = rnorm(N),
     potential_outcomes(Y ~ U + Z * rnorm(N, 2, 2))
   ) +
-  declare_sampling(S = complete_rs(N, n = 250), legacy = FALSE) +
+  declare_sampling(S = complete_rs(N, n = 250)) +
   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
-  declare_assignment(Z = complete_ra(N, m = 25), legacy = FALSE) +
+  declare_assignment(Z = complete_ra(N, m = 25)) +
   declare_measurement(Y = reveal_outcomes(Y ~ Z)) +
   declare_estimator(Y ~ Z, inquiry = "my_inquiry")
 
@@ -49,14 +49,14 @@ design
 df <- draw_data(design)
 
 estimates <- draw_estimates(design)
-inquiries <- draw_inquiries(design)
+inquiries <- draw_estimands(design)
 
 print_code(design)
 
 
 my_population <- declare_model(N = 100)
 
-my_assignment <- declare_assignment(Z = complete_ra(N, m = 50), legacy = FALSE)
+my_assignment <- declare_assignment(Z = complete_ra(N, m = 50))
 
 my_design <- my_population + my_assignment
 
@@ -71,9 +71,9 @@ my_model <-
     Y_Z_1 = noise + rnorm(N, mean = 2, sd = 2)
   )
 
-my_sampling <- declare_sampling(S = complete_rs(N, n = 250), legacy = FALSE)
+my_sampling <- declare_sampling(S = complete_rs(N, n = 250))
 
-my_assignment <- declare_assignment(Z = complete_ra(N, m = 25), legacy = FALSE)
+my_assignment <- declare_assignment(Z = complete_ra(N, m = 25))
 
 my_inquiry <- declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0))
 
