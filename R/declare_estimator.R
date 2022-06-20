@@ -12,11 +12,11 @@
 #' 
 #' In \code{declare_estimator}, you can optionally provide the name of an inquiry or an objected created by \code{\link{declare_inquiry}} to connect your estimate(s) to inquiry(s).
 #' 
-#' The first is through \code{label_estimator(model_handler)}, which is the default value of the \code{handler} argument. Users can use standard modeling functions like lm, glm, or iv_robust. The models are summarized using the function passed to the \code{model_summary} argument. This will usually be a "tidier" like \code{broom::tidy}. The default \code{model_summary} function is \code{tidy_try}, which applies a tidy method if available, and if not, tries to make one on the fly.
+#' The first is through \code{label_estimator(method_handler)}, which is the default value of the \code{handler} argument. Users can use standard method functions like lm, glm, or iv_robust. The methods are summarized using the function passed to the \code{summary} argument. This will usually be a "tidier" like \code{broom::tidy}. The default \code{summary} function is \code{tidy_try}, which applies a tidy method if available, and if not, tries to make one on the fly.
 #' 
 #' An example of this approach is:
 #' 
-#' \code{declare_estimator(Y ~ Z + X, model = lm_robust, model_summary = tidy, term = "Z", inquiry = "ATE")}
+#' \code{declare_estimator(Y ~ Z + X, .method = lm_robust, .summary = tidy, term = "Z", inquiry = "ATE")}
 #' 
 #' The second approach is using a custom data-in, data-out function, usually first passed to \code{label_estimator}. The reason to pass the custom function to \code{label_estimator} first is to enable clean labeling and linking to inquiries.
 #' 
@@ -36,44 +36,89 @@
 #' @return A function that accepts a data.frame as an argument and returns a data.frame containing the value of the estimator and associated statistics.
 #'
 #' @examples
-#' # base design
+#'
+#' # Setup for examples
 #' design <-
 #'   declare_model(
-#'     N = 100,
-#'     female = rbinom(N, 1, 0.5),
-#'     U = rnorm(N),
-#'     potential_outcomes(
-#'      Y ~ rbinom(N, 1, prob = pnorm(0.2 * Z + 0.2 * female + 0.1 * Z * female + U)))
+#'     N = 500,
+#'     gender = rbinom(N, 1, 0.5),
+#'     U = rnorm(N, sd = 0.25),
+#'     potential_outcomes(Y ~ rbinom(
+#'       N, 1, prob = pnorm(0.2 * Z + 0.2 * gender + 0.1 * Z * gender + U)
+#'     ))
 #'   ) +
-#'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) + 
-#'   declare_assignment(Z = complete_ra(N, m = 50)) + 
+#'   declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0)) +
+#'   declare_sampling(S = complete_rs(N = N, n = 200)) +
+#'   declare_assignment(Z = complete_ra(N = N, m = 100)) +
 #'   declare_measurement(Y = reveal_outcomes(Y ~ Z))
 #' 
-#' # Most estimators are modeling functions like lm or glm.
-#'   
-#' # Default statistical model is estimatr::difference_in_means
-#' design + declare_estimator(Y ~ Z, inquiry = "ATE")
+#' # default estimator is lm_robust with tidy summary
+#' design_0 <-
+#'   design +
+#'   declare_estimator(Y ~ Z, inquiry = "ATE")
 #' 
-#' # lm from base R (classical standard errors assuming homoskedasticity)
-#' design + declare_estimator(Y ~ Z, model = lm, inquiry = "ATE")
+#' run_design(design_0)
 #' 
-#' # Use lm_robust (linear regression with heteroskedasticity-robust standard errors) 
-#' # from `estimatr` package
+#' # Linear regression using lm_robust and tidy summary
+#' design_1 <-
+#'   design +
+#'   declare_estimator(
+#'     formula = Y ~ Z,
+#'     .method = lm_robust,
+#'     .summary = tidy,
+#'     term = "Z",
+#'     inquiry = "ATE",
+#'     label = "lm_no_controls"
+#'   )
 #' 
-#' design + declare_estimator(Y ~ Z, model = lm_robust, inquiry = "ATE")
+#' run_design(design_1)
 #' 
-#' # use `term` to select particular coefficients
-#' design + declare_estimator(Y ~ Z*female, term = "Z:female", model = lm_robust)
+#' # Use glance summary function to view model fit statistics
+#' design_2 <-
+#'   design +
+#'   declare_estimator(.method = lm_robust,
+#'                     formula = Y ~ Z,
+#'                     .summary = glance)
+#' 
+#' run_design(design_2)
+#' 
+#' # Use declare_estimator to implement custom answer strategies
+#' my_estimator <- function(data) {
+#'   data.frame(estimate = mean(data$Y))
+#' }
+#' 
+#' design_3 <-
+#'   design +
+#'   declare_inquiry(Y_bar = mean(Y)) +
+#'   declare_estimator(handler = label_estimator(my_estimator),
+#'                     label = "mean",
+#'                     inquiry = "Y_bar")
+#' 
+#' run_design(design_3)
+#' 
+#' # Use `term` to select particular coefficients
+#' design_4 <-
+#'   design +
+#'   declare_inquiry(difference_in_cates = mean(Y_Z_1[gender == 1] - Y_Z_0[gender == 1]) -
+#'                     mean(Y_Z_1[gender == 0] - Y_Z_0[gender == 0])) +
+#'   declare_estimator(Y ~ Z * gender,
+#'                     term = "Z:gender",
+#'                     inquiry = "difference_in_cates",
+#'                     .method = lm_robust)
+#' 
+#' run_design(design_4)
 #' 
 #' # Use glm from base R
-#' design + declare_estimator(
-#'   Y ~ Z + female,
-#'   family = "gaussian",
-#'   inquiry = "ATE",
-#'   model = glm
-#' )
+#' design_5 <-
+#'   design +
+#'   declare_estimator(Y ~ Z + gender,
+#'                     family = "gaussian",
+#'                     inquiry = "ATE",
+#'                     .method = glm)
 #' 
-#' # If we use logit, we'll need to estimate the average marginal effect with 
+#' run_design(design_5)
+#' 
+#' # If we use logit, we'll need to estimate the average marginal effect with
 #' # margins::margins. We wrap this up in function we'll pass to model_summary
 #' 
 #' library(margins) # for margins
@@ -83,51 +128,45 @@
 #'   tidy(margins(x, data = x$data), conf.int = TRUE)
 #' }
 #' 
-#' design +
+#' design_6 <-
+#'   design +
 #'   declare_estimator(
-#'     Y ~ Z + female,
-#'     model = glm,
+#'     Y ~ Z + gender,
+#'     .method = glm,
 #'     family = binomial("logit"),
-#'     model_summary = tidy_margins,
+#'     .summary = tidy_margins,
 #'     term = "Z"
-#'   ) 
+#'   )
+#' 
+#' run_design(design_6)
 #' 
 #' # Multiple estimators for one inquiry
 #' 
-#' two_estimators <-
+#' design_7 <-
 #'   design +
 #'   declare_estimator(Y ~ Z,
-#'                     model = lm_robust,
+#'                     .method = lm_robust,
 #'                     inquiry = "ATE",
 #'                     label = "OLS") +
 #'   declare_estimator(
-#'     Y ~ Z + female,
-#'     model = glm,
+#'     Y ~ Z + gender,
+#'     .method = glm,
 #'     family = binomial("logit"),
-#'     model_summary = tidy_margins,
+#'     .summary = tidy_margins,
 #'     inquiry = "ATE",
 #'     term = "Z",
 #'     label = "logit"
 #'   )
 #' 
-#' run_design(two_estimators)
+#' run_design(design_7)
 #' 
-#' # Declare estimator using a custom handler
 #' 
-#' # Define your own estimator and use the `label_estimator` function for labeling
-#' # Must have `data` argument that is a data.frame
-#' my_dim_function <- function(data){
-#'   data.frame(estimate = with(data, mean(Y[Z == 1]) - mean(Y[Z == 0])))
-#' }
-#' 
-#' design + declare_estimator(
-#'   handler = label_estimator(my_dim_function),
-#'   inquiry = "ATE"
-#' )
+#'
+#'
 #' 
 declare_estimator <-
   make_declarations(
-    label_estimator(model_handler),
+    label_estimator(method_handler),
     step_type = "estimator",
     causal_type = "estimator",
     default_label = "estimator"
@@ -220,7 +259,7 @@ label_estimator <- function(fn) {
   f
 }
 
-#' @rdname ourPkg-deprecated
+#' @rdname DeclareDesign-deprecated
 #' @section \code{tidy_estimator}:
 #' For \code{tidy_estimator}, use \code{\link{label_estimator}}.
 #'
@@ -230,18 +269,42 @@ tidy_estimator <- function(estimator_function) {
   label_estimator(fn = estimator_function)
 }
 
+#' @rdname DeclareDesign-deprecated
+#' @section \code{model_handler}:
+#' For \code{model_handler}, use \code{\link{method_handler}}.
+#' 
+#' @export
+model_handler <- function(...) {
+  warning("model_handler() has been deprecated. Please use method_handler() instead.")
+  method_handler(...)
+}
+
 #' @param data a data.frame
-#' @param model A model function, e.g. lm or glm. By default, the model is the \code{\link{lm_robust}} function from the \link{estimatr} package, which fits OLS regression and calculates robust and cluster-robust standard errors.
-#' @param model_summary A model-in data-out function to extract coefficient estimates or model summary statistics, such as \code{\link{tidy}} or \code{\link{glance}}. By default, the \code{DeclareDesign} model summary function \code{\link{tidy_try}} is used, which first attempts to use the available tidy method for the model object sent to \code{model}, then if not attempts to summarize coefficients using the \code{coef(summary())} and \code{confint} methods. If these do not exist for the model object, it fails.
+#' @param .method A method function, e.g. lm or glm. By default, the method is the \code{\link{lm_robust}} function from the \link{estimatr} package, which fits OLS regression and calculates robust and cluster-robust standard errors.
+#' @param .summary A method-in data-out function to extract coefficient estimates or method summary statistics, such as \code{\link{tidy}} or \code{\link{glance}}. By default, the \code{DeclareDesign} method summary function \code{\link{tidy_try}} is used, which first attempts to use the available tidy method for the method object sent to \code{method}, then if not attempts to summarize coefficients using the \code{coef(summary())} and \code{confint} methods. If these do not exist for the method object, it fails.
+#' @param model Deprecated argument. Use \code{.method} instead.
+#' @param model_summary Deprecated argument. Use \code{.summary} instead.
 #' @param term Symbols or literal character vector of term that represent quantities of interest, i.e. Z. If FALSE, return the first non-intercept term; if TRUE return all term. To escape non-standard-evaluation use \code{!!}.
 #' @rdname declare_estimator 
 #' @importFrom rlang eval_tidy
-model_handler <-
+method_handler <-
   function(data,
              ...,
-             model = estimatr::lm_robust,
-             model_summary = tidy_try,
+             .method = estimatr::lm_robust,
+             .summary = tidy_try,
+             model,
+             model_summary,
              term = FALSE) {
+    
+    if(!missing(model)) {
+      .method <- model
+      warning("The argument 'model = ' is deprecated. Please use '.method = ' instead.")
+    }
+    if(!missing(model_summary)) {
+      .summary <- model_summary
+      warning("The argument 'model_summary = ' is deprecated. Please use '.summary = ' instead.")
+    }
+    
     coefficient_names <-
       enquo(term) # forces evaluation of quosure
     coefficient_names <- reveal_nse_helper(coefficient_names)
@@ -250,18 +313,18 @@ model_handler <-
 
     # todo special case weights offsets for glm etc?
 
-    results <- eval_tidy(quo(model(!!!args, data = data)))
+    results <- eval_tidy(quo(.method(!!!args, data = data)))
     
-    model_summary_fn <- interpret_model_summary(model_summary)
+    summary_fn <- interpret_summary(.summary)
     
-    results <- eval_tidy(model_summary_fn(results))
+    results <- eval_tidy(summary_fn(results))
     
     if("term" %in% colnames(results)) {
       if (is.character(coefficient_names)) {
         coefs_in_output <- coefficient_names %in% results$term
         if (!all(coefs_in_output)) {
           stop(
-            "Not all of the terms declared in your estimator are present in the model output, including ",
+              "Not all of the terms declared in your estimator are present in the estimator's output, including ",
             paste(coefficient_names[!coefs_in_output], collapse = ", "),
             ".",
             call. = FALSE
@@ -277,13 +340,13 @@ model_handler <-
     
   }
 
-# this is an internal function that is a helper to allow users to provide the model_summary arg in a variety of formats
+# this is an internal function that is a helper to allow users to provide the summary arg in a variety of formats
 #' @importFrom rlang is_formula expr_interp as_function expr quo eval_bare is_character is_function
-interpret_model_summary <- function(model_summary) {
+interpret_summary <- function(summary_fn) {
   # parts copied from dplyr:::as_inlined_function and dplyr:::as_fun_list
   
-  if(is_formula(model_summary)) {
-    f <- expr_interp(model_summary)
+  if(is_formula(summary_fn)) {
+    f <- expr_interp(summary_fn)
     # TODO: unsure of what env should be here!
     fn <- as_function(f, env = parent.frame())
     body(fn) <- expr({
@@ -292,12 +355,12 @@ interpret_model_summary <- function(model_summary) {
       eval_bare(`_quo`, parent.frame())
     })
     return(fn)
-  } else if (is_character(model_summary)) {
-    return(get(model_summary, envir = parent.frame(), mode = "function"))
-  } else if (is_function(model_summary)) {
-    return(model_summary)
+  } else if (is_character(summary_fn)) {
+    return(get(summary_fn, envir = parent.frame(), mode = "function"))
+  } else if (is_function(summary_fn)) {
+    return(summary_fn)
   } else {
-    stop("Please provide one sided formula, a function, or a function name to model_summary.")
+    stop("Please provide one sided formula, a function, or a function name to summary.")
   }
 }
 
@@ -315,6 +378,29 @@ validation_fn(model_handler) <- function(ret, dots, label) {
 
     attr(ret, "extra_summary") <-
       sprintf("Model:\t%s", as.character(f_rhs(dots$model)))
+  }
+  ret
+}
+
+validation_fn(method_handler) <- function(ret, dots, label) {
+  declare_time_error_if_data(ret)
+  
+  if ("model" %in% names(dots)) {
+    dots$.method <- dots$model
+    dots$model <- NULL
+  }
+  
+  if (".method" %in% names(dots)) {
+    method <- eval_tidy(dots$.method)
+    if (!is.function(method) || !"data" %in% names(formals(method))) {
+      declare_time_error(
+        "Must provide a function for `method` that takes a `data` argument.",
+        ret
+      )
+    }
+    
+    attr(ret, "extra_summary") <-
+      sprintf("Method:\t%s", as.character(f_rhs(dots$.method)))
   }
   ret
 }

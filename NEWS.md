@@ -1,3 +1,9 @@
+# DeclareDesign 1.0.0
+
+* Allow diagnoses to group by outcomes. 
+* Simplify print(design).
+* Launch version 1.
+
 # DeclareDesign 0.30.0
 
 * New tidy(diagnosis) function to construct a tidy data frame of diagnosand estimates and summary statistics including bootstrapped standard error and confidence intervals.

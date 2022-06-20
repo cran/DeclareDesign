@@ -32,7 +32,7 @@ test_that("test diagnosands", {
   # default set
 
   diagnosis <- diagnose_design(my_design, sims = 2, bootstrap_sims = 2)
-  expect_equal(dim(diagnosis$diagnosands_df), c(2,19))
+  expect_equal(dim(diagnosis$diagnosands_df), c(2, 20))
 
   expect_equal(dim(diagnosis$simulations_df), c(4, 14))
 })
@@ -44,7 +44,7 @@ test_that("Bootstrap ses close", {
   
   pop <- declare_model(N = 100, S100 = rnorm(N, sd = 100), S10000 = rnorm(N, sd = 10000))
   inquiry <- declare_inquiry(S100 = mean(S100), S10000 = mean(S10000))
-  estimate <- declare_estimator(S100 ~ S10000, model = lm, inquiry = list("S100", "S10000"))
+  estimate <- declare_estimator(S100 ~ S10000, .method = lm, inquiry = list("S100", "S10000"))
   design <- pop + inquiry + estimate
   d <- diagnose_design(design, sims = 10000)
   expect_true(d$diagnosands_df$`se(mean_estimand)`[1] > .06)
