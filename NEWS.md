@@ -1,3 +1,7 @@
+# DeclareDesign 1.0.2
+
+* Bug fixes.
+
 # DeclareDesign 1.0.0
 
 * Allow diagnoses to group by outcomes. 

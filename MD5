@@ -1,7 +1,7 @@
-0d22210ae301807b2df52878c83a9431 *DESCRIPTION
+eb9b2499ba0223f1e47155866c47f943 *DESCRIPTION
 e2f304adcdbb63b92140a8f05bf846d0 *LICENSE
 1a34080693c3b594565cd9e2c843bc3e *NAMESPACE
-83dad9f3dbbd80971e874f8476db83e6 *NEWS.md
+af9c957cb57819cf71f2aa4e04afc140 *NEWS.md
 0ef3fc0ef90b8e1668f9c1481b62a871 *R/DeclareDesign-deprecated.R
 5a16b3cf5ec4510916e812ede9d31d40 *R/DeclareDesign.R
 9a178eef19d681c1d57a73490edd1382 *R/aaa.R
@@ -23,7 +23,7 @@ ed33c9ca94404d3ce00202df441899c7 *R/declare_reveal.R
 dc5de0a4a6b443f3ab855fe0f9ea5268 *R/design_helper_functions.R
 a245f5b643a93a47d653d42189e820ba *R/design_print_summary.R
 a2226397fa0e74e7353ccc580b53d67c *R/diagnose_design.R
-6903778e6ac99a6cbacd13314306f9cb *R/diagnosis_helper_functions.R
+9e440d764b736b614be5d54e7a2adf3f *R/diagnosis_helper_functions.R
 6a629c62ffca44aebe423aef23ede5b6 *R/draw_functions.R
 976fd03ae773ed7ca698d12e197a08b8 *R/expand_design.R
 500cbd50e376f99cde047e9677b83ff8 *R/get_functions.R
@@ -80,7 +80,7 @@ a04aee23280f8d8fca1c44cdb0782b58 *man/run_design.Rd
 1d68b6ef7fc0f96ea8e4f9161394c373 *tests/testthat/test-assignment.R
 84550816d45cb56b0a310a6ec618f8d4 *tests/testthat/test-attrition.R
 68be5ab1c68affd76870ed947ef4f626 *tests/testthat/test-bootstrap-diagnosands.R
-7b4820e9bb10baedadfb2bdc11e2a9dc *tests/testthat/test-citation.R
+3e14c5d094e4f25964921584d00083f1 *tests/testthat/test-citation.R
 fb82b6fce56ef5d9b7fd8589d98119be *tests/testthat/test-compare-designs.R
 7fe93aba9b237253d96c9c480bccdcca *tests/testthat/test-compare-diagnoses.R
 8b94d8fa28af30b1209e28d1794e5574 *tests/testthat/test-conduct-custom.R
@@ -122,7 +122,7 @@ aef3c0e71c65574881a6628e89caa832 *tests/testthat/test-plus.R
 e739e2acf5afb1ecad3df1d17eb3f3b8 *tests/testthat/test-print-code.R
 34023dcbf7f4992d9579671a0be7fb21 *tests/testthat/test-quick-design.R
 a62026079a9bd00b76efb8e8e23f32a6 *tests/testthat/test-redesign.R
-4c9399fb4e3ae9165c10ca9ab3fd78e5 *tests/testthat/test-reshape-diagnosis.R
+e6441327ebe1634d969bbdab37e48e74 *tests/testthat/test-reshape-diagnosis.R
 169952ac6f988574a8b4d942099b04cb *tests/testthat/test-reveal-outcomes.R
 4f4b9cea5e250486e1c429753a0975c3 *tests/testthat/test-run-design.R
 c42635a65193768a80d0dbe97e8cb5d0 *tests/testthat/test-sampling.R
