@@ -1,6 +1,6 @@
 Package: DeclareDesign
 Title: Declare and Diagnose Research Designs
-Version: 1.0.2
+Version: 1.0.4
 Authors@R: c(person("Graeme", "Blair", email = "graeme.blair@gmail.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0001-9164-2102")),
              person("Jasper", "Cooper", email = "jaspercooper@gmail.com", role = c("aut"), comment = c(ORCID = "0000-0002-8639-3188")),
              person("Alexander", "Coppock", email = "acoppock@gmail.com", role = c("aut"), comment = c(ORCID = "0000-0002-5733-2386")),
@@ -26,7 +26,7 @@ Suggests: testthat, knitr, rmarkdown, AER, diffobj, dplyr, data.table,
         tibble, ggplot2, future.apply, broom, MASS, Matching, betareg,
         biglm, gam, sf, reshape2, DesignLibrary, coin, margins, psych
 NeedsCompilation: no
-Packaged: 2023-01-10 06:14:25 UTC; gblair
+Packaged: 2023-08-08 00:33:56 UTC; gblair
 Author: Graeme Blair [aut, cre] (<https://orcid.org/0000-0001-9164-2102>),
   Jasper Cooper [aut] (<https://orcid.org/0000-0002-8639-3188>),
   Alexander Coppock [aut] (<https://orcid.org/0000-0002-5733-2386>),
@@ -34,4 +34,4 @@ Author: Graeme Blair [aut, cre] (<https://orcid.org/0000-0001-9164-2102>),
   Neal Fultz [aut]
 Maintainer: Graeme Blair <graeme.blair@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-01-10 07:13:10 UTC
+Date/Publication: 2023-08-08 13:00:27 UTC
