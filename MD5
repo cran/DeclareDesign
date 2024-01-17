@@ -1,9 +1,9 @@
-b93d15784ed3a753258e23413df30d35 *DESCRIPTION
+5aa892a689a7201b2d5ac76a53677a4b *DESCRIPTION
 e2f304adcdbb63b92140a8f05bf846d0 *LICENSE
 1a34080693c3b594565cd9e2c843bc3e *NAMESPACE
-c2350407eda7ecd92795922baee51bf8 *NEWS.md
+b259afa26a3a16217e5a00451d164182 *NEWS.md
 0ef3fc0ef90b8e1668f9c1481b62a871 *R/DeclareDesign-deprecated.R
-5a16b3cf5ec4510916e812ede9d31d40 *R/DeclareDesign.R
+d9de7a0fb3f28dd94e00aeb949cf8c28 *R/DeclareDesign.R
 9a178eef19d681c1d57a73490edd1382 *R/aaa.R
 8fc4cc25c7f9a450f873fca64f9fe051 *R/compare_designs.R
 1385868ef36deee334fcdf6857cf019c *R/compare_diagnoses.R
@@ -38,7 +38,7 @@ bce37551e30bbd54007427f6f7c18eb3 *R/tidy_try.R
 577c6904fd82acdcc571474a3d3e901c *R/utilities.R
 4d193565cfb0625569401b8d226c3167 *inst/CITATION
 f0a3fab9afc39c2aebadfab3dd0b01e3 *man/DeclareDesign-deprecated.Rd
-471064b530f1b7f5b1ebc9e25f0b90b1 *man/DeclareDesign.Rd
+d82853e00857fb1f6f9c7a85490f3853 *man/DeclareDesign.Rd
 58593d472e77a7123a9307cf9aadac05 *man/cite_design.Rd
 a07981a5bd8c96b179e62560b06e6ee8 *man/compare_diagnoses.Rd
 cff3881c976f4f5f861d54e541713294 *man/compare_functions.Rd
@@ -55,7 +55,7 @@ cff3881c976f4f5f861d54e541713294 *man/compare_functions.Rd
 d0973bc27bbf67214048f4c7a55d516b *man/declare_sampling.Rd
 8329dba5c238cfe7e97df73504518c22 *man/declare_step.Rd
 8d8bd7e96cfe50a06c2a356d1551331d *man/declare_test.Rd
-6681fc7290a6c6bb2cc535af54b9c4f5 *man/diagnose_design.Rd
+4bbf1f5e513776db56279ec98333bc4f *man/diagnose_design.Rd
 79cf16216c1e7db0422918aa724d0184 *man/diagnosis_helpers.Rd
 c8734e114f39be9fe207be78c241c40a *man/draw_functions.Rd
 2c83782f3c548840576f305a590d68ca *man/edit.Rd
@@ -71,7 +71,7 @@ e7dd0c1edf017d4e74b7eed35bb86c7b *man/reshape_diagnosis.Rd
 c7cb7b3c64d6019c183987ff15c4448d *man/run_design.Rd
 0f1910bcc7ee3b981f1aff901b1eab62 *man/set_citation.Rd
 592c352aab3410f4a4a6c27356e475de *man/set_diagnosands.Rd
-b7e28559235a57840806479606170b41 *man/simulate_design.Rd
+fc6537c0c5d3e4d754ccd7a64d7035f9 *man/simulate_design.Rd
 0fdc77bc238c2215b75f1faa8db21d6e *man/tidy.diagnosis.Rd
 884a1db028a766fe7145629921258df1 *man/tidy_try.Rd
 4e227f344b2512f35bce8ed5d5383d96 *tests/testthat.R
