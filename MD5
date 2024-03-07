@@ -1,7 +1,7 @@
-5aa892a689a7201b2d5ac76a53677a4b *DESCRIPTION
+08b25be3b7078fa22f0fa662d4a89907 *DESCRIPTION
 e2f304adcdbb63b92140a8f05bf846d0 *LICENSE
 1a34080693c3b594565cd9e2c843bc3e *NAMESPACE
-b259afa26a3a16217e5a00451d164182 *NEWS.md
+e9e38257a2fd043454eb09c6d4ade5b7 *NEWS.md
 0ef3fc0ef90b8e1668f9c1481b62a871 *R/DeclareDesign-deprecated.R
 d9de7a0fb3f28dd94e00aeb949cf8c28 *R/DeclareDesign.R
 9a178eef19d681c1d57a73490edd1382 *R/aaa.R
@@ -22,7 +22,7 @@ b9d3f7d1835e8a7f88a1fd6edc7bba18 *R/declare_sampling.R
 4d81b3d30b5c4eeeddb11f2975c6ee0f *R/declare_test.R
 61ff63e3c5a2c19d0956ecef18ccb4aa *R/design_helper_functions.R
 ccba12826831bed2f591375131075ea7 *R/design_print_summary.R
-0e3ce2c23a1f43f08fd2e20f9de66acc *R/diagnose_design.R
+44e1a197f6409327d6850076b96027c0 *R/diagnose_design.R
 13fee4b318376aa4c563fb333f51d5ab *R/diagnosis_helper_functions.R
 ac89b1e60a389247b27e861d4b7ccf88 *R/draw_functions.R
 21433aeeb6c1a0f7c1a5699ac696dacf *R/expand_design.R
@@ -33,12 +33,12 @@ d84cadec3caf81ea4dca90fbb8b60ada *R/modify_edit.R
 831be5a133dd69e6ed37061b351fb25f *R/redesign.R
 82657ef5dec660615acd2affbac8287f *R/set_citation.R
 9188962ede6121b00e4930d925f9a94d *R/set_diagnosands.R
-0cc24ff10b68bbb18533c1e72d186778 *R/simulate_design.R
+b2fd515d05ac4ee0c6dbe427fbc1aeaf *R/simulate_design.R
 bce37551e30bbd54007427f6f7c18eb3 *R/tidy_try.R
 577c6904fd82acdcc571474a3d3e901c *R/utilities.R
 4d193565cfb0625569401b8d226c3167 *inst/CITATION
 f0a3fab9afc39c2aebadfab3dd0b01e3 *man/DeclareDesign-deprecated.Rd
-d82853e00857fb1f6f9c7a85490f3853 *man/DeclareDesign.Rd
+05e7cc4a23431ca96e0563bb55da6332 *man/DeclareDesign.Rd
 58593d472e77a7123a9307cf9aadac05 *man/cite_design.Rd
 a07981a5bd8c96b179e62560b06e6ee8 *man/compare_diagnoses.Rd
 cff3881c976f4f5f861d54e541713294 *man/compare_functions.Rd
@@ -55,7 +55,7 @@ cff3881c976f4f5f861d54e541713294 *man/compare_functions.Rd
 d0973bc27bbf67214048f4c7a55d516b *man/declare_sampling.Rd
 8329dba5c238cfe7e97df73504518c22 *man/declare_step.Rd
 8d8bd7e96cfe50a06c2a356d1551331d *man/declare_test.Rd
-4bbf1f5e513776db56279ec98333bc4f *man/diagnose_design.Rd
+f3f337230045df174ce7b83c80143f12 *man/diagnose_design.Rd
 79cf16216c1e7db0422918aa724d0184 *man/diagnosis_helpers.Rd
 c8734e114f39be9fe207be78c241c40a *man/draw_functions.Rd
 2c83782f3c548840576f305a590d68ca *man/edit.Rd
@@ -71,7 +71,7 @@ e7dd0c1edf017d4e74b7eed35bb86c7b *man/reshape_diagnosis.Rd
 c7cb7b3c64d6019c183987ff15c4448d *man/run_design.Rd
 0f1910bcc7ee3b981f1aff901b1eab62 *man/set_citation.Rd
 592c352aab3410f4a4a6c27356e475de *man/set_diagnosands.Rd
-fc6537c0c5d3e4d754ccd7a64d7035f9 *man/simulate_design.Rd
+8fa8280b98a1697e617ffdbfbae6e391 *man/simulate_design.Rd
 0fdc77bc238c2215b75f1faa8db21d6e *man/tidy.diagnosis.Rd
 884a1db028a766fe7145629921258df1 *man/tidy_try.Rd
 4e227f344b2512f35bce8ed5d5383d96 *tests/testthat.R
@@ -81,7 +81,7 @@ fc6537c0c5d3e4d754ccd7a64d7035f9 *man/simulate_design.Rd
 84550816d45cb56b0a310a6ec618f8d4 *tests/testthat/test-attrition.R
 68be5ab1c68affd76870ed947ef4f626 *tests/testthat/test-bootstrap-diagnosands.R
 3e14c5d094e4f25964921584d00083f1 *tests/testthat/test-citation.R
-fb82b6fce56ef5d9b7fd8589d98119be *tests/testthat/test-compare-designs.R
+3482790360527bf691b8adfb44c75e31 *tests/testthat/test-compare-designs.R
 7fe93aba9b237253d96c9c480bccdcca *tests/testthat/test-compare-diagnoses.R
 8b94d8fa28af30b1209e28d1794e5574 *tests/testthat/test-conduct-custom.R
 2570ace18b3f00850faef83aa83d523d *tests/testthat/test-continuous-pos.R
@@ -122,12 +122,13 @@ aef3c0e71c65574881a6628e89caa832 *tests/testthat/test-plus.R
 e739e2acf5afb1ecad3df1d17eb3f3b8 *tests/testthat/test-print-code.R
 34023dcbf7f4992d9579671a0be7fb21 *tests/testthat/test-quick-design.R
 a62026079a9bd00b76efb8e8e23f32a6 *tests/testthat/test-redesign.R
-e6441327ebe1634d969bbdab37e48e74 *tests/testthat/test-reshape-diagnosis.R
+884f7ff6d79db8d641f52bb004837a12 *tests/testthat/test-reshape-diagnosis.R
 169952ac6f988574a8b4d942099b04cb *tests/testthat/test-reveal-outcomes.R
 4f4b9cea5e250486e1c429753a0975c3 *tests/testthat/test-run-design.R
 c42635a65193768a80d0dbe97e8cb5d0 *tests/testthat/test-sampling.R
 d253b6f1845f560e9bcc151b3ab9ea5c *tests/testthat/test-save-reload-redesign.R
 5bb8b172cac8d8094f334613f30a9ea7 *tests/testthat/test-scaffolding.R
+6ea408692307642cb0a1663e57d4d34d *tests/testthat/test-sims-independent.R
 bfb849b0682c3d090e0244062a8cd7cf *tests/testthat/test-simulate-design.R
 982bfc2a3216ad4700575174fb7da87b *tests/testthat/test-subset.R
 e901e4ab56276dd138d84c4d9c6e26ad *tests/testthat/test-sugar.R
