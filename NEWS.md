@@ -1,9 +1,17 @@
-# DeclareDesign 1.1
+# DeclareDesign 1.1.1
 
-* Environment objects now saved in relevant quosures only; only relevant objects saved
-* Redesign based on listing of saved objects only. Saved objects now reported as part of design summary.
-* New function select_diagnosands lets you select and adjust diagnosands quickly
-* diagnose_design(design, diagnosands = select_diagnosands(...))
+* Bug fix: replaced unexported rlang internal `quo_get_env()` with the exported `get_env()` in `aaa.R` and `declare_potential_outcomes.R`. The unexported function caused test failures on CRAN when rlang updated its export list.
+* Bug fix: replaced `enquo()` with `substitute()` in `+.dd` to correctly capture step expressions under the new rlang C API. Thanks to Lionel Henry (@lionel-) for the fix.
+* Added `CausalQueries`, `rdrobust`, and `rdss` to `Suggests` to satisfy CRAN dependency checks for tests that use those packages.
+* Made top-level test setup use soft package loads so checks pass when suggested packages are not locally installed.
+* Improved `print.design()` output: clearer labels, deduplication of parameter names across environments, and truncation of long values in the printed parameter table.
+* Added example to `select_diagnosands()` documentation showing use of the `alpha` argument.
+
+# DeclareDesign 1.1.0
+
+* Added global variable capture for design steps to improve serialization and portability of declared designs.
+* Swapped margins for marginaleffects.
+* Changes to tests and examples to not depend on suggested packages.
 
 # DeclareDesign 1.0.10
 

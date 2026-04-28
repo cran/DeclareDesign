@@ -12,11 +12,11 @@ find_all_objects(design)
 \value{
 A data.frame with columns:
 \describe{
-\item{name}{The name of the object/variable}
-\item{value_str}{String representation of the object's value or type}
-\item{step}{The step number where the object was found}
-\item{quosure}{The name of the quosure or "handler" where the object was found}
-\item{env}{The environment object where the variable was found}
+  \item{name}{The name of the object/variable}
+  \item{value_str}{String representation of the object's value or type}
+  \item{step}{The step number where the object was found}
+  \item{quosure}{The name of the quosure or "handler" where the object was found}
+  \item{env}{The environment object where the variable was found}
 }
 }
 \description{

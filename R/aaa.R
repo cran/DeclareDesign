@@ -208,7 +208,7 @@ capture_function_dependencies <- function(
   fun
 }
 
-#' @importFrom rlang is_symbol quo_get_expr new_quosure
+#' @importFrom rlang is_symbol quo_get_expr new_quosure get_env
 
 # Main function to capture globals for quosures
 capture_globals_quosure <-
@@ -221,7 +221,7 @@ capture_globals_quosure <-
     is_N <- (is_symbol(quo_get_expr(q), "N"))
 
     expr <- quo_get_expr(q)
-    old_env <- quo_get_env(q)
+    old_env <- get_env(q)
 
     # needed <- setdiff(find_symbols_recursive(expr), skip)
     needed <- find_symbols_recursive(expr)

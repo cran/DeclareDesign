@@ -227,5 +227,5 @@ if(require("broom")) {
 }
 }
 \seealso{
-\code{\link[estimatr:lm_robust]{estimatr::lm_robust()}}, \code{\link[broom:reexports]{broom::glance()}}
+[estimatr::lm_robust()], [broom::glance()]
 }

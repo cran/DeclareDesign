@@ -1,7 +1,7 @@
 #' uses fabricatr::potential_outcomes
 #. but also allows deprecated case where values are provided directly
 #' @param data A data.frame.
-#' @importFrom rlang quos !!! quo eval_tidy is_symbol as_data_mask as_label quo_squash expr is_formula quo_get_env f_env
+#' @importFrom rlang quos !!! quo eval_tidy is_symbol as_data_mask as_label quo_squash expr is_formula get_env f_env
 #' @importFrom fabricatr fabricate potential_outcomes
 #' @rdname declare_measurement
 #'
@@ -120,7 +120,7 @@ potential_outcomes_handler <- function(data, ...) {
 
     # original quosure env (captured globals like outcome_means, sd, etc.)
     f_quo <- args[[f_idx]]
-    qe <- quo_get_env(f_quo)
+    qe <- get_env(f_quo)
 
     # 1) Build a plain environment that contains DATA columns (and N)
     data_env <- list2env(c(as.list(data), list(N = nrow(data))), parent = qe)
