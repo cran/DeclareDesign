@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>DeclareDesign 2.0: what changes, what does not, and why</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">DeclareDesign 2.0: what changes, what does
+not, and why</h1>
+
+
+
+<div id="the-short-version" class="section level2">
+<h2>The short version</h2>
+<p>DeclareDesign 2.0 is a ground-up reimplementation of DeclareDesign on
+tidyverse primitives. The public API is the one you already know:
+<code>declare_model()</code>, <code>declare_inquiry()</code>,
+<code>declare_sampling()</code>, <code>declare_assignment()</code>,
+<code>declare_measurement()</code>, <code>declare_estimator()</code>,
+joined by <code>+</code>, then handed to <code>simulate_design()</code>,
+<code>diagnose_design()</code>, and <code>redesign()</code>.</p>
+<p>Three things are true of the rewrite, and this vignette defends each
+in turn.</p>
+<p>Most designs run unchanged. The DeclareDesign book, <em>Research
+Design in the Social Sciences</em> at <a href="https://book.declaredesign.org" class="uri">https://book.declaredesign.org</a>, declares 90 designs. 84
+of them are run as tests in this package, and every one builds, runs,
+and returns estimates: the 72 that need nothing beyond DeclareDesign’s
+own dependencies are in the test suite CRAN runs, and the 12 that need
+other modelling packages are in a separate acceptance suite; the
+accounting for the other six is in <a href="#current-status">Current
+status</a> below. What a typical declaration has to change is one thing:
+an estimator’s <code>inquiry =</code> is the inquiry’s label as a
+string, not the object <code>declare_inquiry()</code> returns.
+Everything else that changes is at the edges: a handful of argument
+names, the code-comparison functions and three superseded verbs, and one
+way of grouping a diagnosis.</p>
+<p>The pipeline is faster and it parallelises. Simulation and diagnosis
+run 1.19 to 1.33 times faster sequentially, and four workers make a
+2,000-simulation run 3.4 times faster after one line of
+<code>future::plan()</code>. A seeded run gives the same table
+sequentially and in parallel.</p>
+<p>The rewrite can express designs the original cannot.
+<code>declare_parameters()</code> names what a design can be redesigned
+over, and <code>declare_notes()</code> names what it works out along the
+way. Step-level <code>draws</code> hold a population fixed while the
+assignment is redrawn, or the reverse, and the diagnosis then decomposes
+the variance of any per-simulation quantity by the step that generated
+it. An estimator that fails on one draw is recorded rather than
+fatal.</p>
+<p>DeclareDesign 2.0 was written by its maintainers working with AI
+assistance (Claude, from Anthropic).</p>
+</div>
+<div id="getting-it" class="section level2">
+<h2>Getting it</h2>
+<p>Installing DeclareDesign 2.0 from CRAN brings fabricatr, randomizr,
+and estimatr 2.0 with it. To keep 1.1.1 available for comparison,
+install it into a separate library and pass <code>lib.loc</code> when
+you want it.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">&quot;DeclareDesign&quot;</span>)</span></code></pre></div>
+<p><code>vignette(&quot;getting-started&quot;)</code> is the short introduction;
+this vignette is the long one.</p>
+</div>
+<div id="what-does-not-change" class="section level2">
+<h2>What does not change</h2>
+<p>Here is a standard two-arm design, written identically in 1.x and
+2.0.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="fu">library</span>(DeclareDesign)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>design <span class="ot">&lt;-</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">600</span>, <span class="at">U =</span> <span class="fu">rnorm</span>(N), <span class="fu">potential_outcomes</span>(Y <span class="sc">~</span> <span class="fl">0.3</span> <span class="sc">*</span> Z <span class="sc">+</span> U)) <span class="sc">+</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0)) <span class="sc">+</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N)) <span class="sc">+</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="fu">declare_measurement</span>(<span class="at">Y =</span> <span class="fu">reveal_outcomes</span>(Y <span class="sc">~</span> Z)) <span class="sc">+</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">.method =</span> lm_robust, <span class="at">inquiry =</span> <span class="st">&quot;ATE&quot;</span>, <span class="at">label =</span> <span class="st">&quot;ols&quot;</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">diagnose_design</span>(design, <span class="at">sims =</span> <span class="dv">500</span>)</span></code></pre></div>
+<p>Everything about that block carries over: the <code>+</code>
+operator, expressions that see the columns declared earlier in the same
+step, <code>N</code> available inside the data mask,
+<code>potential_outcomes()</code> and <code>reveal_outcomes()</code>,
+formula-first estimators with <code>.method =</code> and
+<code>.summary =</code>, <code>term =</code>, and the
+<code>inquiry</code> argument that links an estimator to its estimand.
+Writing the potential outcomes out by hand
+(<code>Y_Z_0 = U, Y_Z_1 = U + 0.3</code>) and revealing them with an
+arithmetic expression works just as well. <code>draw_data()</code>,
+<code>draw_estimands()</code>, <code>draw_estimates()</code>,
+<code>run_design()</code>, <code>simulate_design()</code>,
+<code>diagnose_design()</code>, <code>diagnose_designs()</code>,
+<code>reshape_diagnosis()</code>, <code>tidy()</code>,
+<code>get_diagnosands()</code>, <code>get_simulations()</code>,
+<code>declare_test()</code>, <code>declare_step()</code>,
+<code>declare_diagnosands()</code>, and <code>label_estimator()</code>
+all keep their names and what they return, and the book’s designs are
+the evidence.</p>
+<p>The book’s way of redesigning is the 2.0 way. A value named above the
+design is a parameter of it:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>tau <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>design <span class="ot">&lt;-</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">600</span>, <span class="at">U =</span> <span class="fu">rnorm</span>(N), <span class="at">Y_Z_0 =</span> U, <span class="at">Y_Z_1 =</span> U <span class="sc">+</span> tau) <span class="sc">+</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0)) <span class="sc">+</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N)) <span class="sc">+</span></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="fu">declare_measurement</span>(<span class="at">Y =</span> <span class="fu">reveal_outcomes</span>(Y <span class="sc">~</span> Z)) <span class="sc">+</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">.method =</span> lm_robust, <span class="at">inquiry =</span> <span class="st">&quot;ATE&quot;</span>, <span class="at">label =</span> <span class="st">&quot;ols&quot;</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>designs <span class="ot">&lt;-</span> <span class="fu">redesign</span>(design, <span class="at">tau =</span> <span class="fu">c</span>(<span class="fl">0.1</span>, <span class="fl">0.3</span>, <span class="fl">0.5</span>))</span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a><span class="fu">diagnose_design</span>(designs, <span class="at">sims =</span> <span class="dv">500</span>)</span></code></pre></div>
+<p><code>tau</code> is a name the model step reads.
+<code>redesign()</code> finds it, rebinds it in a copy of the
+environment the expression was written in, and the parameter travels
+forward: it appears as a column in the simulations table and as a
+grouping variable in the diagnosands table, so custom diagnosands can
+refer to it directly. A designer function’s argument is the same thing,
+so <code>redesign(designer(), tau = c(0.1, 0.3))</code> sweeps a
+designer, and <code>expand_design()</code> is deprecated in its
+favour.</p>
+<p>Printing a design shows the calls that declared it, as in 1.x, and
+then a table of the names <code>redesign()</code> can reach. Each row is
+one name: <code>value</code> is what it currently holds,
+<code>kind</code> says how a bare replacement is read (a
+<code>scalar</code> or <code>vector</code> supplies one design per
+element, where <code>data</code> and <code>function</code> are single
+values), <code>declared</code> is whether a
+<code>declare_parameters()</code> step declares it, and
+<code>steps</code> lists the steps that read it, which are the steps
+that would respond to a change. <code>?design_parameters</code> returns
+the same table and documents it. Asking for a change to a name that is
+not in the table warns instead of silently returning the design you
+started with:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">print</span>(design)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; Research design with 5 steps</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="co">#&gt; Step 1 (model): declare_model(N = 600, U = rnorm(N), Y_Z_0 = U, Y_Z_1 = U + tau)</span></span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co">#&gt; Step 2 (inquiry): declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0))</span></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="co">#&gt; Step 3 (assignment): declare_assignment(Z = complete_ra(N))</span></span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="co">#&gt; Step 4 (measurement): declare_measurement(Y = reveal_outcomes(Y ~ Z))</span></span>
+<span id="cb4-8"><a href="#cb4-8" tabindex="-1"></a><span class="co">#&gt; Step 5 (estimator): declare_estimator(Y ~ Z, .method = lm_robust, inquiry = &quot;ATE&quot;, label = &quot;ols&quot;)</span></span>
+<span id="cb4-9"><a href="#cb4-9" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb4-10"><a href="#cb4-10" tabindex="-1"></a><span class="co">#&gt; Parameters and objects the design refers to:</span></span>
+<span id="cb4-11"><a href="#cb4-11" tabindex="-1"></a><span class="co">#&gt;  name value   kind declared steps</span></span>
+<span id="cb4-12"><a href="#cb4-12" tabindex="-1"></a><span class="co">#&gt;   tau   0.3 scalar    FALSE     1</span></span>
+<span id="cb4-13"><a href="#cb4-13" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" tabindex="-1"></a><span class="fu">redesign</span>(design, <span class="at">taw =</span> <span class="fl">0.5</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" tabindex="-1"></a><span class="co">#&gt; Warning: You requested a change to taw but taw is not found in the design.</span></span></code></pre></div>
+</div>
+<div id="what-changes-and-why" class="section level2">
+<h2>What changes, and why</h2>
+<p>Each change below opens with what a script written the old way does
+under 2.0. It <em>stops</em>, with an error that names the replacement;
+it <em>warns</em>, running as before with a warning once per session; or
+it is <em>silent</em>, running to a table that differs from 1.x’s. The
+<a href="#porting-an-existing-script">Porting an existing script</a>
+table collects the stops and warnings in one place; the two silent
+changes are the ones to check by eye.</p>
+<div id="in-declaredesign-2.0" class="section level3">
+<h3>In DeclareDesign 2.0</h3>
+<div id="redesign-reaches-a-name-the-design-reads-not-a-number-it-writes-down" class="section level4">
+<h4><code>redesign()</code> reaches a name the design reads, not a
+number it writes down</h4>
+<p>Stops. <code>declare_model(N = 500)</code> puts 500 in the design.
+Nothing outside the design holds that number and nothing names it, so
+<code>redesign(design, N = 1000)</code> has nothing to change. In 1.x
+that call warned that <code>N</code> was not found and returned the
+design unchanged, so
+<code>redesign(design, N = c(500, 1000, 2000))</code> handed back three
+copies of the same design, all at N = 500, and a diagnosis of the three
+reported one design’s numbers three times. In 2.0 it errors and says
+what to do:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>design <span class="ot">&lt;-</span> <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">500</span>, <span class="at">U =</span> <span class="fu">rnorm</span>(N), <span class="at">Y =</span> U) <span class="sc">+</span> <span class="fu">declare_inquiry</span>(<span class="at">m =</span> <span class="fu">mean</span>(Y))</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">redesign</span>(design, <span class="at">N =</span> <span class="dv">1000</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; Error:</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; ! N is an argument this design writes down, not a parameter.</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; ℹ To redesign over values of `N`, give it a name outside the design:</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt;   `N &lt;- 500`, then `declare_model(N = N, ...)`. A designer function&#39;s</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt;   argument does the same thing.</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; ℹ `declare_parameters(N = 500)` names it inside the design instead, which is</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt;   worth it when several steps read it or when a column shares its name.</span></span></code></pre></div>
+<p>The usual fix is the one the book uses throughout: name the value
+above the design, or make it a designer function’s argument.
+<code>declare_parameters(N = 500) + declare_model(N = N, ...)</code>
+does the same from inside the design, and earns its place when several
+steps read the value or when a column shares its name. A value written
+inline inside a call, as in
+<code>complete_ra(N, prob_each = c(0.2, 0.8))</code>, cannot be
+redesigned either: there is no name to rebind, so name it first.
+Functions count as names, so which estimator or which summary function a
+design uses can itself be a parameter:
+<code>redesign(design, g = median)</code> swaps <code>g</code>
+everywhere it appears.</p>
+<p>A bare atomic vector always supplies one value per design, which is
+what makes <code>tau = c(0.1, 0.3)</code> two designs. A parameter that
+is itself a vector therefore has to be wrapped, in 2.0 as in 1.x, and
+2.0 says so where 1.x handed back the broken designs without
+comment:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="fu">redesign</span>(design, <span class="at">prob_each =</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; Warning: `prob_each` currently holds 3 values, so c(0, 0.5, 0.5) is being</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; read as 3 designs, one value each.</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; ℹ Wrap it in `list()` to use it as a single replacement.</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="fu">redesign</span>(design, <span class="at">prob_each =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span>)))</span></code></pre></div>
+<p>The rule applies to bare vectors and bare lists, and to nothing else.
+A data frame, a matrix, a function, and anything else carrying a class
+is one value, so a design built on a supplied data set is re-run on
+another one by naming it: a design written
+<code>declare_model(data = dataset, ...)</code> with
+<code>dataset &lt;- pilot</code> is redesigned with
+<code>redesign(design, dataset = full_sample)</code>, reaching the name
+the design reads the data under rather than <code>data</code>, which
+names fabricate’s argument. 1.x read the data frame as a list of columns
+and asked for one design per column.</p>
+</div>
+<div id="inquiry-is-the-quoted-label-of-the-inquiry" class="section level4">
+<h4><code>inquiry =</code> is the quoted label of the inquiry</h4>
+<p>Stops. An estimator names the inquiry it answers with the inquiry’s
+label, as a string. 1.x also accepted the inquiry step object, the value
+<code>declare_inquiry()</code> returns, and the book’s designs sometimes
+pass it:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="co"># old, sometimes seen</span></span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>my_inquiry <span class="ot">&lt;-</span> <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0))</span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">inquiry =</span> my_inquiry)</span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt; Error: Pass the inquiry label as a string, not a step object.</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co"># new</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">inquiry =</span> <span class="st">&quot;ATE&quot;</span>)</span></code></pre></div>
+<p>The change is that the step object is refused. It was refused because
+it never worked: in 1.x the step object carried a <code>label</code>
+attribute whose value was the step type, so passing it linked the
+estimator to an inquiry called <code>&quot;inquiry&quot;</code>, which does not
+exist, and the estimand column came back all <code>NA</code> with no
+complaint. The string form makes the link visible at the estimator,
+where a reader can check that <code>&quot;ATE&quot;</code> is a label some inquiry
+step declares. A label that matches no inquiry step warns, once, naming
+the estimator, the label it asked for, and the labels that exist; in 1.x
+it was silent.</p>
+</div>
+<div id="make_groups-vars...-is-gone-group-with-group_by" class="section level4">
+<h4><code>make_groups = vars(...)</code> is gone; group with
+<code>group_by()</code></h4>
+<p>Stops.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="co"># old</span></span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">diagnose_design</span>(design, <span class="at">make_groups =</span> <span class="fu">vars</span>(N))</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; Error: `make_groups` is not a design.</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="co">#&gt; ℹ `make_groups` is gone. Group the simulations instead:</span></span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt;   `simulate_design(design) |&gt; group_by(N) |&gt; diagnose_design()`.</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a><span class="co"># new</span></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a><span class="fu">simulate_design</span>(design, <span class="at">sims =</span> <span class="dv">500</span>) <span class="sc">|&gt;</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>  <span class="fu">group_by</span>(N) <span class="sc">|&gt;</span></span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>  <span class="fu">diagnose_design</span>()</span></code></pre></div>
+<p><code>diagnose_design()</code> accepts a simulations data frame as
+its first argument and honours any grouping already on it. Anything you
+can compute with <code>mutate()</code> becomes a grouping variable, so
+subgroup diagnosis no longer needs a bespoke argument:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">simulate_design</span>(design, <span class="at">sims =</span> <span class="dv">500</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">significant =</span> p.value <span class="sc">&lt;</span> <span class="fl">0.05</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="fu">group_by</span>(significant) <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>  <span class="fu">diagnose_design</span>()</span></code></pre></div>
+<p>You can also filter simulations before diagnosing, bind simulations
+from separate runs, or diagnose a table you saved to disk last week.
+<code>add_grouping_variables</code> and <code>future.seed</code> are
+gone the same way, and each stops with its replacement: grouping is
+<code>group_by()</code>, and seeding is <code>set.seed()</code> before
+the call under any plan (see <a href="#parallel-execution">Parallel
+execution</a>).</p>
+</div>
+<div id="dotted-argument-names-.design-.expand-.method-and-.summary" class="section level4">
+<h4>Dotted argument names: <code>.design</code>, <code>.expand</code>,
+<code>.method</code>, and <code>.summary</code></h4>
+<p>Stops. <code>redesign()</code> takes <code>.design</code>, with
+<code>.expand</code> after the dots. Everything else in that call is a
+parameter of <em>your</em> design, and a plain <code>design</code>
+partially matched a parameter named <code>d</code>, <code>de</code>,
+<code>des</code>, or any other prefix of <code>design</code>, and
+swallowed it. <code>.method</code> and <code>.summary</code> in
+<code>declare_estimator()</code> follow the same convention.
+<code>redesign(design = d, N = 10)</code> therefore stops, with R’s own
+message that <code>.design</code> is missing; write
+<code>redesign(d, N = 10)</code>. The designs a sweep returns are named
+by the values that distinguish them, <code>N = 10</code> and
+<code>N = 20</code>, where 1.x named them <code>design_1</code> and
+<code>design_2</code>.</p>
+<p><code>label_estimator(fn = )</code> is
+<code>label_estimator(.method = )</code> for the same reason, and stops
+with R’s message that <code>fn</code> is unused.
+<code>label_test()</code> is the same function under a second name, kept
+so that 1.x scripts run: a test is an estimator whose tidied output
+carries a p-value, and nothing in the wrapper depends on which name was
+called.</p>
+</div>
+<div id="draw_data-no-longer-runs-part-of-a-design-on-supplied-data" class="section level4">
+<h4><code>draw_data()</code> no longer runs part of a design on supplied
+data</h4>
+<p>Stops. <code>draw_data(design, data = , start = , end = )</code> ran
+a slice of the design against supplied data. That job belongs to
+<code>get_estimates(design, data)</code> for the estimators, and to
+<code>design[start:end]</code> for a slice, since a design is a list of
+steps and <code>+</code> reassembles one. Passed the old way,
+<code>data</code>, <code>start</code>, and <code>end</code> stop with an
+error naming these replacements, unless the design reads a parameter by
+that name: <code>draw_data()</code>’s other arguments are now parameter
+values, so <code>draw_data(design, theta = 0.5)</code> draws from a
+design that leaves <code>theta</code> free. <code>draw_data()</code> now
+runs the data-generating steps only, so a design whose estimator fails
+still draws its data, and drawing data no longer fits models it throws
+away.</p>
+</div>
+<div id="reshape_diagnosis-reshapes-select-columns-afterwards" class="section level4">
+<h4><code>reshape_diagnosis()</code> reshapes; select columns
+afterwards</h4>
+<p>Stops. <code>reshape_diagnosis(select = , exclude = )</code> are
+gone, with R’s message that the argument is unused. The result is a
+tibble; <code>select()</code> it.</p>
+</div>
+<div id="expand_design-is-deprecated" class="section level4">
+<h4><code>expand_design()</code> is deprecated</h4>
+<p>Warns. A designer’s argument is a name the design reads, so
+<code>redesign(designer(), N = c(100, 200))</code> does what
+<code>expand_design(designer, N = c(100, 200))</code> did, with one verb
+instead of two. <code>expand_design()</code> still works and warns once
+per session. The one thing it did that <code>redesign()</code> cannot is
+rebuild a design whose shape depends on an argument (a designer that
+adds a step when <code>blocked = TRUE</code>); call the designer with
+each value for that.</p>
+</div>
+<div id="set_diagnosands-is-deprecated" class="section level4">
+<h4><code>set_diagnosands()</code> is deprecated</h4>
+<p>Warns. Diagnosands belong to a diagnosis, not to a design.
+<code>diagnose_design(design, diagnosands = declare_diagnosands(...))</code>
+does what attaching them did, and the attached form has two failure
+modes that the argument does not have. A diagnosands object
+<em>replaces</em> the default set rather than adding to it, so declaring
+one diagnosand silently drops the other six. And the attribute does not
+survive <code>redesign()</code>: a design that reported custom
+diagnosands before a parameter moved reports the defaults after it,
+which is a table of <code>NA</code> rather than an error when the
+estimator emits a column the defaults cannot read.
+<code>set_diagnosands()</code> still works and warns once per session,
+and <code>redesign()</code> warns when it drops an attached set. For a
+script that keeps using it, its first argument is now
+<code>design</code> rather than <code>x</code>, and the old name stops
+with R’s message that <code>x</code> is unused.</p>
+</div>
+<div id="step-modification-functions-are-deprecated" class="section level4">
+<h4>Step-modification functions are deprecated</h4>
+<p>Warns. <code>insert_step()</code>, <code>delete_step()</code>, and
+<code>replace_step()</code> still work, with their 1.x argument order,
+and warn once per session. The replacement is to rebuild the design,
+which is available because a design is an ordinary list of steps:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>design_v2 <span class="ot">&lt;-</span> design[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>] <span class="sc">+</span> new_step <span class="sc">+</span> design[<span class="dv">4</span><span class="sc">:</span><span class="dv">5</span>]</span></code></pre></div>
+</div>
+<div id="the-code-comparison-functions-are-removed-compare_diagnoses-is-not" class="section level4">
+<h4>The code-comparison functions are removed;
+<code>compare_diagnoses()</code> is not</h4>
+<p>Stops. <code>compare_designs()</code>,
+<code>compare_design_code()</code>,
+<code>compare_design_summaries()</code>,
+<code>compare_design_estimates()</code>,
+<code>compare_design_inquiries()</code>,
+<code>compare_design_data()</code>, and <code>print_code()</code> error
+with a message asking for the R script instead. Reconstructing a legible
+declaration from a design object requires carrying the original source
+text through every transformation the design undergoes, and the
+reconstruction was never faithful enough to trust. Sharing the script
+that made the design is simpler.</p>
+<p>Comparing what two designs <em>achieve</em> is a different question,
+and <code>compare_diagnoses()</code> answers it:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">compare_diagnoses</span>(design, <span class="fu">redesign</span>(design, <span class="at">tau =</span> <span class="fl">0.5</span>), <span class="at">sims =</span> <span class="dv">500</span>)</span></code></pre></div>
+<p>Every diagnosand the two designs share is reported under each design
+and as a difference, with a bootstrap standard error and interval on
+that difference. Either argument can be a diagnosis you already ran.</p>
+</div>
+<div id="declare_potential_outcomes-declare_reveal-and-declare_estimators-are-gone" class="section level4">
+<h4><code>declare_potential_outcomes()</code>,
+<code>declare_reveal()</code>, and <code>declare_estimators()</code> are
+gone</h4>
+<p>Stops. The first two were already deprecated in 1.x and now error
+with the replacement: <code>potential_outcomes()</code> inside
+<code>declare_model()</code> and <code>reveal_outcomes()</code> inside
+<code>declare_measurement()</code>. <code>declare_estimators()</code>
+was an alias of <code>declare_estimator()</code> and no longer exists,
+so a call to it stops with R’s message that the function was not found.
+<code>declare_population()</code> still works and warns once.</p>
+</div>
+<div id="what-comes-back-has-one-more-column-in-a-different-order" class="section level4">
+<h4>What comes back has one more column, in a different order</h4>
+<p>Silent. Every table of estimates (<code>draw_estimates()</code>,
+<code>run_design()</code>, <code>get_estimates()</code>, the
+simulations) carries an <code>estimand</code> column, joined from the
+inquiry, and puts <code>estimator</code>, <code>inquiry</code>, and
+<code>estimand</code> after the tidied statistics rather than before.
+Code that indexes columns by position, or that snapshots a table, will
+see the difference; code that uses names will not. Two estimators with
+the same label are renamed apart with a message where 1.x errored.</p>
+</div>
+<div id="an-estimator-that-fails-on-one-draw-is-recorded-not-fatal" class="section level4">
+<h4>An estimator that fails on one draw is recorded, not fatal</h4>
+<p>Silent, in the sense that a run which stopped in 1.x now finishes.
+Under <code>simulate_design()</code> and <code>diagnose_design()</code>,
+a draw whose estimator errors is kept as a row with
+<code>error = TRUE</code> and the message. The run finishes, one warning
+reports how many draws failed for each estimator and the first message,
+and the diagnosands are computed on the draws that succeeded, with
+<code>n_sims</code> reporting how many that was. In 1.x one
+non-convergence in five hundred lost the whole run.
+<code>run_design()</code> and <code>draw_estimates()</code> still stop
+on an error, because a single run is usually someone looking for the
+error.</p>
+</div>
+</div>
+<div id="in-fabricatr-2.0" class="section level3">
+<h3>In fabricatr 2.0</h3>
+<p>fabricatr 2.0 has its own vignette, <a href="https://CRAN.R-project.org/package=fabricatr/vignettes/fabricatr2.0.html"><code>vignette(&quot;fabricatr2.0&quot;, package = &quot;fabricatr&quot;)</code></a>,
+and its changes are confined to the spelling of multilevel and
+cross-classified declarations. A flat
+<code>declare_model(N = 500, ...)</code> is unaffected, and so is the
+output of every declaration that runs: the same columns, in the same
+order, with the same types, <code>ID</code> still zero-padded character,
+<code>N</code> still available in the data mask and still absent from
+the output.</p>
+<p>Three spellings change, and each warns once per session and runs,
+printing the call to write instead:</p>
+<ul>
+<li><code>add_level(nest = FALSE)</code> is
+<code>declare_level()</code>.</li>
+<li><code>cross_levels(by = join_using(A, B))</code> and
+<code>link_levels(by = join_using(A, B, rho = ))</code> are
+<code>.by = c(&quot;A&quot;, &quot;B&quot;)</code>, with <code>rho</code> as its own
+argument.</li>
+<li><code>modify_level(by = )</code> is
+<code>modify_level(.by = )</code>.</li>
+</ul>
+<p>One spelling stops: <code>fabricate(100, ...)</code> with a
+positional <code>N</code> is an error; write <code>N = 100</code>.</p>
+</div>
+</div>
+<div id="porting-an-existing-script" class="section level2">
+<h2>Porting an existing script</h2>
+<p>Seven greps cover every breaking change in both packages. Run them
+over a script and whatever they do not find needs no attention.</p>
+<table>
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Grep for</th>
+<th>Replace with</th>
+<th>What it affects</th>
+<th>Under 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>redesign(</code> over a number written inside a step</td>
+<td>name the value above the design, or
+<code>declare_parameters()</code></td>
+<td>every redesign of a literal</td>
+<td>stops</td>
+</tr>
+<tr class="even">
+<td><code>inquiry =</code> followed by an object</td>
+<td><code>inquiry = &quot;ATE&quot;</code></td>
+<td>any estimator linked to an estimand</td>
+<td>stops</td>
+</tr>
+<tr class="odd">
+<td><code>make_groups</code>, <code>add_grouping_variables</code></td>
+<td><code>simulate_design() \|&gt; group_by() \|&gt; diagnose_design()</code></td>
+<td>subgroup diagnosis</td>
+<td>stops</td>
+</tr>
+<tr class="even">
+<td><code>redesign(design =</code>, <code>expand_design(</code></td>
+<td><code>redesign(d, ...)</code>,
+<code>redesign(designer(), ...)</code></td>
+<td>the named first argument; the deprecated verb</td>
+<td>stops; warns</td>
+</tr>
+<tr class="odd">
+<td><code>draw_data(</code> with <code>data =</code>,
+<code>start =</code>, or <code>end =</code></td>
+<td><code>get_estimates(design, data)</code>,
+<code>design[i:j]</code></td>
+<td>partial runs</td>
+<td>stops</td>
+</tr>
+<tr class="even">
+<td><code>nest = FALSE</code>, <code>join_using</code>,
+<code>modify_level(by =</code></td>
+<td><code>declare_level()</code>, <code>.by = c(&quot;A&quot;, &quot;B&quot;)</code>,
+<code>.by =</code></td>
+<td>multilevel fabrication</td>
+<td>warns</td>
+</tr>
+<tr class="odd">
+<td><code>fabricate(&lt;number&gt;,</code></td>
+<td><code>fabricate(N = &lt;number&gt;,</code></td>
+<td>positional <code>N</code></td>
+<td>stops</td>
+</tr>
+</tbody>
+</table>
+<p>Every row either stops or warns, so none of them runs to a different
+answer without saying so. The other deprecated verbs
+(<code>set_diagnosands()</code>, <code>insert_step()</code>,
+<code>delete_step()</code>, <code>replace_step()</code>) also warn and
+run, and the code-comparison functions stop outright. Two changes are
+silent, and are the ones to check by eye: the new <code>estimand</code>
+column and the new column order of every estimates table (see <a href="#what-comes-back-has-one-more-column-in-a-different-order">What
+comes back has one more column, in a different order</a>), and a
+simulation that finishes with some estimator errors recorded where 1.x
+would have stopped (see <a href="#an-estimator-that-fails-on-one-draw-is-recorded-not-fatal">An
+estimator that fails on one draw is recorded, not fatal</a>).</p>
+</div>
+<div id="what-is-new" class="section level2">
+<h2>What is new</h2>
+<div id="declare_parameters-and-declare_notes" class="section level3">
+<h3><code>declare_parameters()</code> and
+<code>declare_notes()</code></h3>
+<p>A parameter is a value a caller may set; a note is a quantity the
+design works out. <code>declare_parameters()</code> names the first,
+<code>declare_notes()</code> the second, and <code>redesign()</code>
+reaches only the first.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>design <span class="ot">&lt;-</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>  <span class="fu">declare_parameters</span>(<span class="at">m_arms =</span> <span class="dv">3</span>, <span class="at">n_units =</span> <span class="dv">300</span>) <span class="sc">+</span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="fu">declare_notes</span>(<span class="at">conditions =</span> <span class="fu">seq_len</span>(m_arms)) <span class="sc">+</span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> n_units, <span class="at">U =</span> <span class="fu">rnorm</span>(N), <span class="at">Y =</span> U) <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N, <span class="at">conditions =</span> conditions)) <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">mu =</span> <span class="fu">mean</span>(Y))</span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">design_parameters</span>(design)</span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt;     name value   kind declared steps</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt;   m_arms     3 scalar     TRUE  1, 2</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt;  n_units   300 scalar     TRUE  1, 3</span></span>
+<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a></span>
+<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a><span class="fu">redesign</span>(design, <span class="at">m_arms =</span> <span class="fu">c</span>(<span class="dv">2</span>, <span class="dv">3</span>, <span class="dv">4</span>))</span></code></pre></div>
+<p>A declared parameter is bound for every step after it and takes
+precedence over a workspace binding of the same name, including one read
+through a helper function. It is evaluated once, when the design is
+built, so <code>declare_parameters(u = rnorm(1))</code> fixes one number
+for the life of the design; put <code>set.seed()</code> above the
+declaration, not above <code>draw_data()</code>, if that number is to be
+reproducible. A note is evaluated at its own position on every run, so
+it can read the data (<code>declare_notes(tallest = max(Y))</code> after
+a model step) and it survives a sampling step that destroys what it was
+computed from.</p>
+</div>
+<div id="a-design-is-a-value" class="section level3">
+<h3>A design is a value</h3>
+<p>A design carries the objects its expressions read: helper functions,
+data frames, the <code>tau</code> above. It therefore survives
+<code>saveRDS()</code> and a fresh session, and does not change meaning
+when an unrelated console variable is edited, both as in 1.x. What 2.0
+adds is that the same holds on a parallel worker: a fabricatr level
+function inside a model step (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/417">#417</a>)
+and a recursive helper function (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/509">#509</a>)
+both run under <code>plan(multisession)</code>, where 1.x fails on
+each.</p>
+</div>
+<div id="step-level-draws" class="section level3">
+<h3>Step-level <code>draws</code></h3>
+<p>Every step takes a <code>draws</code> argument. When a step declares
+<code>draws = k</code>, it fans out <code>k</code> independent times,
+and every step downstream inherits and multiplies those paths.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>tau <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>design <span class="ot">&lt;-</span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">500</span>, <span class="fu">potential_outcomes</span>(Y <span class="sc">~</span> tau <span class="sc">*</span> Z <span class="sc">+</span> <span class="fu">rnorm</span>(N)), <span class="at">draws =</span> <span class="dv">100</span>) <span class="sc">+</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0)) <span class="sc">+</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N), <span class="at">draws =</span> <span class="dv">50</span>) <span class="sc">+</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>  <span class="fu">declare_measurement</span>(<span class="at">Y =</span> <span class="fu">reveal_outcomes</span>(Y <span class="sc">~</span> Z)) <span class="sc">+</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a>  <span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">inquiry =</span> <span class="st">&quot;ATE&quot;</span>)</span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co"># 100 populations x 50 assignments within each = 5,000 simulation paths</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a>diagnosis <span class="ot">&lt;-</span> <span class="fu">diagnose_design</span>(design)</span></code></pre></div>
+<p>The declared draws define the simulation plan, so no
+<code>sims</code> argument is needed; passing one anyway warns that it
+is ignored and prints the plan. The simulations table gains one column
+per fan-out step: <code>model_draw</code> runs 1 to 100 and
+<code>assignment_draw</code> runs 1 to 50 within each. Each population
+carries its own realized estimand, and the estimates drawn within it are
+matched to that estimand rather than to a pooled average. Steps upstream
+of the first fan-out run once and stay fixed, which is what “hold the
+population fixed and redraw the assignment” means.</p>
+</div>
+<div id="variance-decomposition" class="section level3">
+<h3>Variance decomposition</h3>
+<p>When a design has declared draws, the diagnosis carries an extra
+table, printed after the diagnosands and reachable as
+<code>diagnosis$variance_decomposition</code>. Here are its informative
+columns for the design above:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>diagnosis<span class="sc">$</span>variance_decomposition <span class="sc">|&gt;</span></span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a>  <span class="fu">select</span>(quantity, var_model, var_assignment, var_residual, frac_model, frac_assignment)</span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 6</span></span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="co">#&gt;   quantity   var_model var_assignment var_residual frac_model frac_assignment</span></span>
+<span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;          &lt;dbl&gt;          &lt;dbl&gt;        &lt;dbl&gt;      &lt;dbl&gt;           &lt;dbl&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="co">#&gt; 1 estimate  0.00375        0.00394               0      0.488           0.512</span></span>
+<span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; 2 p.value   0.00148        0.00259               0      0.364           0.636</span></span>
+<span id="cb14-8"><a href="#cb14-8" tabindex="-1"></a><span class="co">#&gt; 3 std.error 0.00000328     0.00000399            0      0.451           0.549</span></span>
+<span id="cb14-9"><a href="#cb14-9" tabindex="-1"></a><span class="co">#&gt; 4 statistic 0.477          0.502                 0      0.487           0.513</span></span></code></pre></div>
+<p>Each row is one per-simulation quantity (<code>estimate</code>,
+<code>p.value</code>, <code>std.error</code>, and <code>statistic</code>
+by default) and each <code>var_</code> column is one draw level, named
+after the step that produced it. <code>var_model</code> is the
+between-population variance of the quantity, <code>var_assignment</code>
+is its variance across randomizations within a fixed population, and
+<code>var_residual</code> is what remains inside a single (population,
+assignment) cell, which is zero here because nothing downstream of the
+assignment is random. The <code>frac_</code> columns normalize the
+components so they sum to 1: <code>frac_model</code> of 0.49 for the
+estimate says that about half of the variability in the estimate traces
+to which population was drawn, and the other half to which randomization
+was realized. The full table also carries the design’s grouping columns,
+<code>n_sims</code>, and <code>var_total</code>.</p>
+</div>
+<div id="parallel-execution" class="section level3">
+<h3>Parallel execution</h3>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a>future<span class="sc">::</span><span class="fu">plan</span>(future<span class="sc">::</span>multisession, <span class="at">workers =</span> <span class="dv">4</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">simulate_design</span>(design, <span class="at">sims =</span> <span class="dv">2000</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>future<span class="sc">::</span><span class="fu">plan</span>(future<span class="sc">::</span>sequential)</span></code></pre></div>
+<p>No other change is needed. Every draw runs on its own L’Ecuyer-CMRG
+random-number stream whichever plan is active, so
+<code>set.seed(1)</code> before the call gives the same table under
+<code>plan(sequential)</code> and <code>plan(multisession)</code>,
+nested draws included. The packages attached in your session are
+attached on each worker. The seeds are not 1.x’s, so a seed carried over
+from a 1.x script reproduces a 1.x table only under 1.x. The bootstrap
+inside <code>diagnose_design()</code> runs in the main process; it is
+one grouped <code>summarize()</code> over the stacked replicates and is
+not where the time goes.</p>
+</div>
+<div id="summary-says-what-each-step-did" class="section level3">
+<h3><code>summary()</code> says what each step did</h3>
+<p><code>summary(design)</code> runs the design once and reports, under
+each step’s call, what that step did to the data: the rows a data step
+produced or kept and the columns it added, dropped, or changed, the
+value each inquiry took, and the estimate each estimator returned,
+followed by the run itself and the parameters. It replaces 1.x’s
+variable-by-variable tables with one line per step, and the pieces are
+on the returned object (<code>summary(design)$steps</code>,
+<code>$estimates</code>, <code>$data</code>) rather than only on the
+console. <code>summary(design, run = FALSE)</code> skips the run for a
+design whose estimator is slow.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a>tau <span class="ot">&lt;-</span> <span class="fl">0.3</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>design <span class="ot">&lt;-</span></span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="fu">declare_model</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">U =</span> <span class="fu">rnorm</span>(N), <span class="at">Y_Z_0 =</span> U, <span class="at">Y_Z_1 =</span> U <span class="sc">+</span> tau) <span class="sc">+</span></span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="fu">declare_inquiry</span>(<span class="at">ATE =</span> <span class="fu">mean</span>(Y_Z_1 <span class="sc">-</span> Y_Z_0)) <span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  <span class="fu">declare_sampling</span>(<span class="at">S =</span> <span class="fu">complete_rs</span>(N, <span class="at">n =</span> <span class="dv">50</span>)) <span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="fu">declare_assignment</span>(<span class="at">Z =</span> <span class="fu">complete_ra</span>(N)) <span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>  <span class="fu">declare_measurement</span>(<span class="at">Y =</span> <span class="fu">reveal_outcomes</span>(Y <span class="sc">~</span> Z)) <span class="sc">+</span></span>
+<span id="cb16-9"><a href="#cb16-9" tabindex="-1"></a>  <span class="fu">declare_estimator</span>(Y <span class="sc">~</span> Z, <span class="at">.method =</span> lm_robust, <span class="at">inquiry =</span> <span class="st">&quot;ATE&quot;</span>, <span class="at">label =</span> <span class="st">&quot;ols&quot;</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" tabindex="-1"></a></span>
+<span id="cb16-11"><a href="#cb16-11" tabindex="-1"></a><span class="fu">summary</span>(design)</span>
+<span id="cb16-12"><a href="#cb16-12" tabindex="-1"></a><span class="co">#&gt; Research design with 6 steps</span></span>
+<span id="cb16-13"><a href="#cb16-13" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb16-14"><a href="#cb16-14" tabindex="-1"></a><span class="co">#&gt; Step 1 (model): declare_model(N = 100, U = rnorm(N), Y_Z_0 = U, Y_Z_1 = U + tau)</span></span>
+<span id="cb16-15"><a href="#cb16-15" tabindex="-1"></a><span class="co">#&gt;   N = 100 rows; adds ID, U, Y_Z_0, Y_Z_1</span></span>
+<span id="cb16-16"><a href="#cb16-16" tabindex="-1"></a><span class="co">#&gt; Step 2 (inquiry): declare_inquiry(ATE = mean(Y_Z_1 - Y_Z_0))</span></span>
+<span id="cb16-17"><a href="#cb16-17" tabindex="-1"></a><span class="co">#&gt;   ATE = 0.3</span></span>
+<span id="cb16-18"><a href="#cb16-18" tabindex="-1"></a><span class="co">#&gt; Step 3 (sampling): declare_sampling(S = complete_rs(N, n = 50))</span></span>
+<span id="cb16-19"><a href="#cb16-19" tabindex="-1"></a><span class="co">#&gt;   keeps 50 of 100 rows; adds S</span></span>
+<span id="cb16-20"><a href="#cb16-20" tabindex="-1"></a><span class="co">#&gt; Step 4 (assignment): declare_assignment(Z = complete_ra(N))</span></span>
+<span id="cb16-21"><a href="#cb16-21" tabindex="-1"></a><span class="co">#&gt;   adds Z</span></span>
+<span id="cb16-22"><a href="#cb16-22" tabindex="-1"></a><span class="co">#&gt; Step 5 (measurement): declare_measurement(Y = reveal_outcomes(Y ~ Z))</span></span>
+<span id="cb16-23"><a href="#cb16-23" tabindex="-1"></a><span class="co">#&gt;   adds Y</span></span>
+<span id="cb16-24"><a href="#cb16-24" tabindex="-1"></a><span class="co">#&gt; Step 6 (estimator): declare_estimator(Y ~ Z, .method = lm_robust, inquiry = &quot;ATE&quot;, label = &quot;ols&quot;)</span></span>
+<span id="cb16-25"><a href="#cb16-25" tabindex="-1"></a><span class="co">#&gt;   Z = 0.273 (std.error 0.259)</span></span>
+<span id="cb16-26"><a href="#cb16-26" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb16-27"><a href="#cb16-27" tabindex="-1"></a><span class="co">#&gt; One run of the design:</span></span>
+<span id="cb16-28"><a href="#cb16-28" tabindex="-1"></a><span class="co">#&gt; # A tibble: 1 × 12</span></span>
+<span id="cb16-29"><a href="#cb16-29" tabindex="-1"></a><span class="co">#&gt;   term  estimate std.error statistic p.value conf.low conf.high    df outcome</span></span>
+<span id="cb16-30"><a href="#cb16-30" tabindex="-1"></a><span class="co">#&gt;   &lt;chr&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;</span></span>
+<span id="cb16-31"><a href="#cb16-31" tabindex="-1"></a><span class="co">#&gt; 1 Z        0.273     0.259      1.05   0.297   -0.248     0.794    48 Y</span></span>
+<span id="cb16-32"><a href="#cb16-32" tabindex="-1"></a><span class="co">#&gt; # ℹ 3 more variables: estimator &lt;chr&gt;, inquiry &lt;chr&gt;, estimand &lt;dbl&gt;</span></span>
+<span id="cb16-33"><a href="#cb16-33" tabindex="-1"></a><span class="co">#&gt;</span></span>
+<span id="cb16-34"><a href="#cb16-34" tabindex="-1"></a><span class="co">#&gt; Parameters and objects the design refers to:</span></span>
+<span id="cb16-35"><a href="#cb16-35" tabindex="-1"></a><span class="co">#&gt;  name value   kind declared steps</span></span>
+<span id="cb16-36"><a href="#cb16-36" tabindex="-1"></a><span class="co">#&gt;   tau   0.3 scalar    FALSE     1</span></span></code></pre></div>
+</div>
+<div id="progress" class="section level3">
+<h3>Progress</h3>
+<p><code>simulate_design(design, progress = TRUE)</code> shows a bar for
+that call. The better habit is
+<code>progressr::handlers(global = TRUE)</code> once per session, after
+which every call reports, in the console, in a Shiny app, or from inside
+parallel workers, through whatever handler you chose. The package
+signals progress and never renders it, so with no handler it prints
+nothing.</p>
+</div>
+<div id="estimator-arguments-pass-as-written" class="section level3">
+<h3>Estimator arguments pass as written</h3>
+<p><code>declare_estimator()</code> and <code>declare_step()</code> hand
+their arguments to <code>.method</code> or the handler as written rather
+than pre-evaluated against the data, so a method that does its own
+non-standard evaluation gets what it expects:
+<code>metafor::rma.uni</code> (issue #463),
+<code>tidyr::pivot_wider</code> as a <code>declare_step()</code> handler
+with <code>id_cols = pair</code>, and a helper that reads a bare column
+name. A plain function taking values works as before, because
+<code>.method</code> is called with the data and the expressions are
+evaluated where the method evaluates them.</p>
+</div>
+</div>
+<div id="speed" class="section level2">
+<h2>Speed</h2>
+<p>All timings come from <a href="https://github.com/DeclareDesign/DeclareDesign/blob/f596be6e1059ef5d91aa053f403e81ceec2bfe60/data-raw/benchmark_vignette.R"><code>data-raw/benchmark_vignette.R</code></a>,
+which re-measures every figure in this section and reports which ones
+have moved. Each cell runs in its own R process and reports the quietest
+of three runs, each the median of five replications. The parallel row
+warms its workers first, because <code>future::plan()</code> spawns them
+once per session and charging that to the run understates what
+parallelism buys: measured without warming, the last row reads 2.4x
+rather than 3.4x. Measured 2026-09-12 on an Apple M4 Pro under R 4.6.0,
+comparing DeclareDesign 1.1.1 with fabricatr 1.0.2 against DeclareDesign
+2.0.0 with fabricatr 2.0.0, holding estimatr fixed at 2.0.0 on both
+sides, on the two-arm design declared above (N = 600,
+<code>lm_robust</code>). The first two rows compare the packages; the
+third compares 2.0.0 with itself, sequential against four workers.</p>
+<table>
+<colgroup>
+<col width="20%" />
+<col width="26%" />
+<col width="26%" />
+<col width="26%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Operation</th>
+<th align="right">Before</th>
+<th align="right">After</th>
+<th align="right">Ratio</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>simulate_design(sims = 500)</code>, 1.1.1 against 2.0.0</td>
+<td align="right">0.94 s</td>
+<td align="right">0.79 s</td>
+<td align="right">1.19x</td>
+</tr>
+<tr class="even">
+<td><code>diagnose_design(sims = 500, bootstrap_sims = 200)</code>,
+1.1.1 against 2.0.0</td>
+<td align="right">1.26 s</td>
+<td align="right">0.95 s</td>
+<td align="right">1.33x</td>
+</tr>
+<tr class="odd">
+<td><code>simulate_design(sims = 2000)</code> in 2.0.0, sequential
+against four workers</td>
+<td align="right">3.20 s</td>
+<td align="right">0.95 s</td>
+<td align="right">3.4x</td>
+</tr>
+</tbody>
+</table>
+<p>Parallelism is the larger lever. The sequential gain is concentrated
+in the plumbing, because model fitting is the same
+<code>lm_robust()</code> call in both packages and takes more than half
+of each simulation; on this design the estimator step is about 1 ms of a
+1.7 ms draw. The bootstrap stacks all <code>B</code> resampled tables
+with a <code>.boot_id</code> column and runs one grouped
+<code>summarize()</code> instead of <code>B</code> separate calls, which
+is where the diagnosis row’s extra gain comes from. Speeding up the
+estimator itself is what estimatr 2.0 is for.</p>
+<p>On a clustered design (30 villages of 20 citizens, an ICC of 0.2, a
+true effect of 0.3, and cluster-robust standard errors) the two packages
+agree on what they report, which is the check worth running whenever a
+rewrite claims to be a replacement. Across 2,000 simulations: bias 0.001
+against -0.003, SD of the estimate 0.178 against 0.177, power 0.360
+against 0.364, coverage 0.947 against 0.953. The two columns are
+independent runs rather than a seed-matched pair, because 2.0’s
+random-number streams are deliberately not 1.x’s, so what separates them
+is Monte Carlo error: at 2,000 simulations its standard error is about
+0.005 on coverage and 0.011 on power. The design is declared in the same
+script.</p>
+</div>
+<div id="why-rewrite-at-all" class="section level2">
+<h2>Why rewrite at all</h2>
+<p>The original packages carry machinery solving problems the tidyverse
+already solves.</p>
+<p>fabricatr’s workspace system exists to answer one question: how does
+a column defined early in a <code>fabricate()</code> call become visible
+to a column defined later? Its answer is a UUID-keyed environment of
+data frames, an “active df” pointer, <code>rlang::call_modify</code>
+injection, and <code>dynGet(&quot;N&quot;)</code> walking the dynamic scope to
+find the row count. The tidyverse answer is a named list used as a data
+mask and a loop over <code>rlang::eval_tidy</code>. fabricatr 2.0 is
+about 2,100 lines of R against 3,193.</p>
+<p>DeclareDesign’s complexity concentrates in three places, and each has
+a tidyverse replacement. The simulation loop is
+<code>purrr::map2</code>, or <code>furrr::future_map2</code> when a
+parallel plan is set, over one RNG stream per draw. Diagnosis is one
+<code>group_by() |&gt; summarize()</code>. Parameter substitution in
+<code>redesign()</code> is environment cloning: a quosure already
+carries the environment it was captured in, so changing a parameter is
+cloning that environment and rebinding one name, and the same operation
+is what <code>declare_parameters()</code> does at construction and
+<code>declare_notes()</code> does at run time. A
+<code>design_step</code> is a <code>function(data)</code> with
+attributes, and a <code>design</code> is a named list of them.</p>
+<p>DeclareDesign 2.0 is 6,153 lines of R against 1.1.1’s 7,036, so the
+line count is not the argument. The argument is what the lines are spent
+on. In 1.x the count goes to the custom evaluation machinery; in 2.0 it
+goes to capturing what a design reads so that it is a value, to the
+checks that turn silent failures into messages, and to the features
+under <a href="#what-is-new">What is new</a>. The remaining code is
+written in idioms a reader already knows from dplyr, purrr, and rlang,
+which is the difference between a package two people can maintain and a
+package two people can hand to someone else.</p>
+</div>
+<div id="current-status" class="section level2">
+<h2>Current status</h2>
+<p>As of 2026-10-24. fabricatr 2.0, randomizr 2.0, and estimatr 2.0 are
+on CRAN, and DeclareDesign 2.0 is released against them.</p>
+<p><strong>What the claims above rest on.</strong> The 84 book
+declarations are run as tests, the 72 that need only this package’s
+dependencies by <a href="https://github.com/DeclareDesign/DeclareDesign/blob/f596be6e1059ef5d91aa053f403e81ceec2bfe60/tests/testthat/test-book-designs.R"><code>tests/testthat/test-book-designs.R</code></a>
+and the other 12 by <a href="https://github.com/DeclareDesign/DeclareDesign/blob/f596be6e1059ef5d91aa053f403e81ceec2bfe60/tests/acceptance/test-book-designs.R"><code>tests/acceptance/test-book-designs.R</code></a>,
+each asserting that the declaration builds, runs, and returns estimates
+that are not all <code>NA</code>. Of the six left out, four use a value
+the book defines outside any code chunk, one needs the
+<code>interference</code> package, which is not on CRAN, and one fails
+identically under 1.1.1. Separately, on 2026-08-22 all 191 code chunks
+of the book’s fifteen code-bearing chapters were run in order under 2.0,
+and 173 ran without error. None of the rest failed for a reason that is
+2.0’s: two are <code>install.packages()</code> calls; ten read a name
+the book defines in a chunk it does not display; two are typos in the
+book’s own code; two redesign a literal written inside a step, which
+fails under 1.1.1 as well; and one attaches the CRAN DesignLibrary over
+2.0, which is the open item below. The designs of
+<code>macartan/ResearchDesigns</code> also run under 2.0, 966 assertions
+with no failures.</p>
+<p><strong>Open.</strong> DesignLibrary 0.1.10, the version on CRAN,
+declares potential outcomes with
+<code>declare_potential_outcomes()</code>, which 2.0 makes defunct, so
+its designers stop with that error under 2.0. DesignLibrary 2.0, written
+against DeclareDesign 2.0, follows this release.</p>
+<div id="bugs-reported-against-1.1.1-that-2.0-fixes" class="section level3">
+<h3>Bugs reported against 1.1.1 that 2.0 fixes</h3>
+<p>Each open issue on the DeclareDesign tracker that can be reproduced
+in code was run against both packages by <a href="https://github.com/DeclareDesign/DeclareDesign/blob/f596be6e1059ef5d91aa053f403e81ceec2bfe60/data-raw/open_issues.R"><code>data-raw/open_issues.R</code></a>,
+so this list can be regenerated rather than trusted. Seven of them fail
+in 1.1.1 and work in 2.0:</p>
+<table>
+<colgroup>
+<col width="50%" />
+<col width="50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Issue</th>
+<th>What happens in DeclareDesign 1.1.1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/463">#463</a></td>
+<td><code>rma.uni</code> as the estimator’s method errors: quosures
+reach a function that uses base non-standard evaluation</td>
+</tr>
+<tr class="even">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/456">#456</a></td>
+<td><code>declare_estimator(x ~ 1, model = lm, subset = x &gt; 1)</code>
+errors, though it works with <code>lm_robust</code>; so does
+<code>weights = 1/x^2</code></td>
+</tr>
+<tr class="odd">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/457">#457</a></td>
+<td>a handler’s own default arguments are not picked up</td>
+</tr>
+<tr class="even">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/479">#479</a></td>
+<td>a spurious warning that estimates and inquiries were matched
+ambiguously, when two estimators name the same inquiry</td>
+</tr>
+<tr class="odd">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/482">#482</a></td>
+<td>a design with a test but no estimator cannot be diagnosed after
+<code>redesign()</code></td>
+</tr>
+<tr class="even">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/509">#509</a></td>
+<td>a recursive helper function in the calling environment overflows the
+node stack</td>
+</tr>
+<tr class="odd">
+<td><a href="https://github.com/DeclareDesign/DeclareDesign/issues/417">#417</a></td>
+<td>a model step using <code>add_level()</code> cannot be diagnosed
+under <code>plan(multisession)</code></td>
+</tr>
+</tbody>
+</table>
+<p>#463 and #456 share a cause: 1.x splices an estimator’s arguments
+into the method call as quosures, so a method not written for rlang
+receives an object it cannot use. See <a href="#estimator-arguments-pass-as-written">Estimator arguments pass as
+written</a>.</p>
+<p>Four feature requests on the tracker are implemented: an estimator
+that errors on one draw records a row rather than aborting the
+simulation (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/385">#385</a>,
+see <a href="#an-estimator-that-fails-on-one-draw-is-recorded-not-fatal">An
+estimator that fails on one draw is recorded, not fatal</a>); a progress
+bar (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/370">#370</a>,
+see <a href="#progress">Progress</a>); <code>redesign()</code> naming
+its designs by the values that distinguish them (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/472">#472</a>);
+and <code>draw_data(design, theta = 0.5)</code> drawing from a design
+that leaves <code>theta</code> free (<a href="https://github.com/DeclareDesign/DeclareDesign/issues/497">#497</a>),
+as do <code>draw_estimands()</code>, <code>draw_estimates()</code>, and
+<code>run_design()</code>.</p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
